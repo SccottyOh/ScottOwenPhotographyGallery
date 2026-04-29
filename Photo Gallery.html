@@ -1,0 +1,762 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Chris Ruth Photography</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400&family=Jost:wght@300;400;500&display=swap" rel="stylesheet" />
+  <script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+  <script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" crossorigin="anonymous"></script>
+  <script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+  <script type="text/babel" src="tweaks-panel.jsx"></script>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #f8f6f3;
+      --bg2: #f0ede8;
+      --fg: #1c1a17;
+      --fg2: #6b6560;
+      --fg3: #a09890;
+      --accent: #8b7355;
+      --white: #ffffff;
+      --nav-h: 60px;
+      --serif: 'Cormorant Garamond', Georgia, serif;
+      --sans: 'Jost', system-ui, sans-serif;
+    }
+
+    html, body { height: 100%; background: var(--bg); color: var(--fg); font-family: var(--sans); font-weight: 300; }
+    #root { min-height: 100vh; }
+
+    ::-webkit-scrollbar { width: 6px; }
+    ::-webkit-scrollbar-track { background: var(--bg); }
+    ::-webkit-scrollbar-thumb { background: var(--fg3); border-radius: 3px; }
+
+    /* Nav */
+    .nav {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+      height: var(--nav-h);
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 0 32px;
+      transition: background 0.3s, box-shadow 0.3s;
+    }
+    .nav.solid { background: var(--bg); box-shadow: 0 1px 0 rgba(0,0,0,0.08); }
+    .nav.transparent { background: transparent; }
+    .nav.dark .nav-logo, .nav.dark .nav-icon { color: var(--white); }
+    .nav.dark.solid .nav-logo, .nav.dark.solid .nav-icon { color: var(--fg); }
+    .nav.dark .nav-center { color: var(--white); }
+    .nav.dark.solid .nav-center { color: var(--fg); }
+
+    .nav-logo {
+      font-family: var(--serif); font-size: 20px; font-weight: 400; letter-spacing: 0.04em;
+      cursor: pointer; text-decoration: none; color: inherit;
+      background: none; border: none; transition: color 0.2s;
+    }
+    .nav-center {
+      position: absolute; left: 50%; transform: translateX(-50%);
+      font-family: var(--serif); font-size: 15px; font-weight: 400; letter-spacing: 0.08em;
+      color: inherit; opacity: 0.85;
+      background: none; border: none; cursor: pointer; padding: 6px 12px;
+      border-radius: 4px; transition: opacity 0.2s; white-space: nowrap;
+    }
+    .nav-center:hover { opacity: 0.55; }
+    .nav-actions { display: flex; align-items: center; gap: 20px; }
+    .nav-icon {
+      background: none; border: none; cursor: pointer; color: inherit;
+      display: flex; align-items: center; justify-content: center;
+      width: 36px; height: 36px; border-radius: 50%;
+      transition: background 0.15s, color 0.2s;
+    }
+    .nav-icon:hover { background: rgba(0,0,0,0.07); }
+    .nav-icon svg { width: 18px; height: 18px; stroke: currentColor; fill: none; stroke-width: 1.5; }
+
+    /* Home */
+    .home-header {
+      text-align: center; padding: 120px 32px 64px;
+      border-bottom: 1px solid rgba(0,0,0,0.08);
+    }
+    .home-header h1 {
+      font-family: var(--serif); font-weight: 300; font-size: clamp(36px, 5vw, 64px);
+      letter-spacing: 0.02em; color: var(--fg); margin-bottom: 12px;
+    }
+    .home-header p { font-size: 13px; letter-spacing: 0.12em; color: var(--fg2); text-transform: uppercase; }
+
+    .gallery-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(380px, 1fr));
+      gap: 2px; padding: 2px;
+    }
+    .gallery-card {
+      position: relative; overflow: hidden; cursor: pointer;
+      aspect-ratio: 4/3; background: var(--bg2);
+    }
+    .gallery-card img {
+      width: 100%; height: 100%; object-fit: cover;
+      transition: transform 0.6s cubic-bezier(0.25,0.46,0.45,0.94);
+      display: block;
+    }
+    .gallery-card:hover img { transform: scale(1.04); }
+    .gallery-card-overlay {
+      position: absolute; inset: 0;
+      background: linear-gradient(to top, rgba(10,8,5,0.72) 0%, rgba(10,8,5,0.1) 55%, transparent 100%);
+      display: flex; flex-direction: column; justify-content: flex-end;
+      padding: 28px 28px 26px;
+    }
+    .gallery-card-title {
+      font-family: var(--serif); font-size: 26px; font-weight: 400; color: #fff;
+      letter-spacing: 0.02em; line-height: 1.15; margin-bottom: 6px;
+    }
+    .gallery-card-meta { font-size: 11px; letter-spacing: 0.14em; text-transform: uppercase; color: rgba(255,255,255,0.7); }
+    .gallery-card-count {
+      position: absolute; top: 16px; right: 16px;
+      background: rgba(0,0,0,0.45); color: rgba(255,255,255,0.9);
+      font-size: 11px; letter-spacing: 0.1em; padding: 4px 10px; border-radius: 20px;
+      backdrop-filter: blur(4px);
+    }
+
+    /* Gallery hero */
+    .gallery-hero {
+      position: relative; height: 100vh; overflow: hidden;
+      display: flex; align-items: flex-end; justify-content: center;
+      transition: height 0.4s;
+    }
+    .gallery-hero img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+    .gallery-hero-overlay {
+      position: absolute; inset: 0;
+      background: linear-gradient(to top, rgba(0,0,0,0.65) 0%, rgba(0,0,0,0.05) 50%, transparent 100%);
+    }
+    .gallery-hero-content {
+      position: relative; z-index: 2;
+      text-align: center; padding-bottom: 80px; padding-left: 32px; padding-right: 32px;
+    }
+    .gallery-hero-content h1 {
+      font-family: var(--serif); font-weight: 300; font-size: clamp(40px, 6vw, 88px);
+      color: #fff; letter-spacing: 0.03em; line-height: 1.05; margin-bottom: 14px;
+    }
+    .gallery-hero-content p { font-size: 12px; letter-spacing: 0.18em; text-transform: uppercase; color: rgba(255,255,255,0.75); }
+    .hero-scroll-hint {
+      position: absolute; bottom: 28px; left: 50%; transform: translateX(-50%);
+      display: flex; flex-direction: column; align-items: center; gap: 8px;
+      color: rgba(255,255,255,0.6); font-size: 10px; letter-spacing: 0.15em; text-transform: uppercase;
+      animation: fadeInUp 1.2s ease 0.8s both;
+    }
+    .hero-scroll-hint svg { width: 16px; height: 16px; stroke: currentColor; fill: none; stroke-width: 1.5; animation: bounce 2s infinite; }
+    @keyframes bounce { 0%,100% { transform: translateY(0); } 50% { transform: translateY(5px); } }
+    @keyframes fadeInUp { from { opacity: 0; transform: translateX(-50%) translateY(16px); } to { opacity: 1; transform: translateX(-50%) translateY(0); } }
+
+    /* Sets nav */
+    .sets-nav {
+      background: var(--white); border-bottom: 1px solid rgba(0,0,0,0.08);
+      display: flex; align-items: center; justify-content: center;
+      padding: 0 32px; gap: 0; position: sticky; top: var(--nav-h); z-index: 90;
+      overflow-x: auto; scrollbar-width: none;
+    }
+    .sets-nav::-webkit-scrollbar { display: none; }
+    .set-tab {
+      background: none; border: none; cursor: pointer;
+      font-family: var(--sans); font-size: 11px; font-weight: 400;
+      letter-spacing: 0.14em; text-transform: uppercase; color: var(--fg2);
+      padding: 18px 20px; border-bottom: 2px solid transparent;
+      white-space: nowrap; transition: color 0.2s, border-color 0.2s;
+    }
+    .set-tab:hover { color: var(--fg); }
+    .set-tab.active { color: var(--fg); border-bottom-color: var(--fg); }
+
+    /* Photo grid */
+    .photo-grid { columns: 3; column-gap: 3px; padding: 3px; max-width: 1600px; margin: 0 auto; }
+    @media (max-width: 900px) { .photo-grid { columns: 2; } }
+    @media (max-width: 560px) { .photo-grid { columns: 1; } }
+
+    .photo-item {
+      break-inside: avoid; margin-bottom: 3px; position: relative;
+      cursor: pointer; overflow: hidden; display: block; background: var(--bg2);
+    }
+    .photo-item img {
+      width: 100%; display: block;
+      transition: transform 0.5s cubic-bezier(0.25,0.46,0.45,0.94), filter 0.3s;
+    }
+    .photo-item:hover img { transform: scale(1.03); filter: brightness(0.92); }
+    .photo-item-overlay {
+      position: absolute; inset: 0; display: flex; align-items: flex-end; justify-content: flex-end;
+      padding: 12px; opacity: 0; transition: opacity 0.2s;
+    }
+    .photo-item:hover .photo-item-overlay { opacity: 1; }
+    .heart-btn {
+      width: 34px; height: 34px; border-radius: 50%; border: none;
+      background: rgba(0,0,0,0.4); backdrop-filter: blur(4px);
+      cursor: pointer; display: flex; align-items: center; justify-content: center;
+      transition: background 0.15s, transform 0.15s;
+    }
+    .heart-btn:hover { background: rgba(0,0,0,0.6); transform: scale(1.1); }
+    .heart-btn svg { width: 15px; height: 15px; stroke: #fff; fill: none; stroke-width: 1.8; transition: fill 0.15s; }
+    .heart-btn.liked svg { fill: #e05555; stroke: #e05555; }
+
+    /* Lightbox */
+    .lightbox {
+      position: fixed; inset: 0; z-index: 300;
+      background: rgba(8,7,5,0.97);
+      display: flex; align-items: center; justify-content: center;
+      animation: lbIn 0.22s ease;
+    }
+    @keyframes lbIn { from { opacity: 0; } to { opacity: 1; } }
+    .lightbox-img { max-width: 92vw; max-height: 92vh; object-fit: contain; display: block; animation: lbImgIn 0.25s ease; }
+    @keyframes lbImgIn { from { opacity: 0; transform: scale(0.97); } to { opacity: 1; transform: scale(1); } }
+    .lb-close {
+      position: fixed; top: 20px; right: 20px; z-index: 10;
+      width: 44px; height: 44px; border-radius: 50%; border: none;
+      background: rgba(255,255,255,0.1); backdrop-filter: blur(6px);
+      cursor: pointer; color: #fff; display: flex; align-items: center; justify-content: center;
+      transition: background 0.15s;
+    }
+    .lb-close:hover { background: rgba(255,255,255,0.2); }
+    .lb-close svg { width: 18px; height: 18px; stroke: currentColor; fill: none; stroke-width: 1.5; }
+    .lb-arrow {
+      position: fixed; top: 50%; transform: translateY(-50%);
+      width: 52px; height: 52px; border-radius: 50%; border: none;
+      background: rgba(255,255,255,0.08); backdrop-filter: blur(6px);
+      cursor: pointer; color: #fff; display: flex; align-items: center; justify-content: center;
+      transition: background 0.15s; z-index: 10;
+    }
+    .lb-arrow:hover { background: rgba(255,255,255,0.18); }
+    .lb-arrow svg { width: 20px; height: 20px; stroke: currentColor; fill: none; stroke-width: 1.5; }
+    .lb-prev { left: 20px; }
+    .lb-next { right: 20px; }
+    .lb-meta {
+      position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%);
+      color: rgba(255,255,255,0.5); font-size: 12px; letter-spacing: 0.1em;
+      display: flex; align-items: center; gap: 20px;
+    }
+    .lb-meta span { white-space: nowrap; }
+    .lb-heart {
+      background: none; border: none; cursor: pointer; color: rgba(255,255,255,0.6);
+      display: flex; align-items: center; gap: 6px; font-size: 12px; letter-spacing: 0.08em;
+      transition: color 0.15s;
+    }
+    .lb-heart:hover { color: #fff; }
+    .lb-heart.liked { color: #e05555; }
+    .lb-heart svg { width: 16px; height: 16px; stroke: currentColor; fill: none; stroke-width: 1.8; transition: fill 0.15s; }
+    .lb-heart.liked svg { fill: #e05555; }
+
+    /* Footer */
+    .gallery-footer {
+      text-align: center; padding: 48px 32px;
+      border-top: 1px solid rgba(0,0,0,0.08); margin-top: 16px;
+    }
+    .gallery-footer p { font-size: 12px; letter-spacing: 0.1em; color: var(--fg3); }
+
+    /* Toast */
+    .toast {
+      position: fixed; bottom: 32px; left: 50%; transform: translateX(-50%);
+      background: var(--fg); color: var(--white);
+      font-size: 12px; letter-spacing: 0.08em; padding: 10px 20px;
+      border-radius: 24px; z-index: 400;
+      animation: toastIn 0.3s ease, toastOut 0.3s ease 1.8s forwards;
+      pointer-events: none;
+    }
+    @keyframes toastIn { from { opacity: 0; transform: translateX(-50%) translateY(10px); } to { opacity: 1; transform: translateX(-50%) translateY(0); } }
+    @keyframes toastOut { to { opacity: 0; transform: translateX(-50%) translateY(10px); } }
+
+    .back-btn {
+      background: none; border: none; cursor: pointer; font-family: var(--sans);
+      font-size: 11px; letter-spacing: 0.12em; text-transform: uppercase;
+      color: var(--fg2); display: flex; align-items: center; gap: 6px;
+      padding: 6px 0; transition: color 0.15s;
+    }
+    .back-btn:hover { color: var(--fg); }
+    .back-btn svg { width: 14px; height: 14px; stroke: currentColor; fill: none; stroke-width: 1.5; }
+  </style>
+</head>
+<body>
+<div id="root"></div>
+<script type="text/babel">
+const { useState, useEffect, useCallback, useRef } = React;
+
+const TWEAK_DEFAULTS = /*EDITMODE-BEGIN*/{
+  "gridColumns": "4",
+  "heroHeight": "tall",
+  "accentColor": "#8b7355",
+  "navStyle": "transparent",
+  "photoSpacing": "comfortable"
+}/*EDITMODE-END*/;
+
+const PHOTOGRAPHER = "Chris Ruth";
+
+function makePhotos(seeds, setLabel) {
+  return seeds.map((seed, i) => ({
+    id: `${setLabel}-${i}`,
+    src: `https://picsum.photos/seed/${seed}/1200/900`,
+    thumb: `https://picsum.photos/seed/${seed}/600/450`,
+    w: seed % 3 === 0 ? 900 : 1200,
+    h: seed % 3 === 0 ? 1200 : (seed % 2 === 0 ? 800 : 900),
+  }));
+}
+
+const GALLERIES = [
+  {
+    id: "meghan-desmond",
+    title: "Meghan & Desmond",
+    subtitle: "Wedding · September 2024 · Napa Valley, CA",
+    cover: "https://picsum.photos/seed/wed01/1600/900",
+    coverThumb: "https://picsum.photos/seed/wed01/800/600",
+    date: "September 14, 2024",
+    location: "Napa Valley, CA",
+    sets: [
+      { id: "all", label: "All Photos", photos: makePhotos([101,102,103,104,105,106,107,108,109,110,111,112,113,114,115,116,117,118,119,120,121,122,123,124], "md") },
+      { id: "ceremony", label: "Ceremony", photos: makePhotos([101,103,105,107,109,111,113,115], "mdc") },
+      { id: "reception", label: "Reception", photos: makePhotos([102,104,106,108,110,112,114,116,118,120], "mdr") },
+      { id: "portraits", label: "Portraits", photos: makePhotos([117,119,121,122,123,124], "mdp") },
+    ],
+  },
+  {
+    id: "sarah-james",
+    title: "Sarah & James",
+    subtitle: "Engagement · July 2024 · Marin Headlands, CA",
+    cover: "https://picsum.photos/seed/eng02/1600/900",
+    coverThumb: "https://picsum.photos/seed/eng02/800/600",
+    date: "July 6, 2024",
+    location: "Marin Headlands, CA",
+    sets: [
+      { id: "all", label: "All Photos", photos: makePhotos([201,202,203,204,205,206,207,208,209,210,211,212,213,214,215,216], "sj") },
+      { id: "golden-hour", label: "Golden Hour", photos: makePhotos([201,203,205,207,209,211], "sjg") },
+      { id: "beach", label: "Beach", photos: makePhotos([202,204,206,208,210,212,214,216], "sjb") },
+    ],
+  },
+  {
+    id: "rodriguez-family",
+    title: "Rodriguez Family",
+    subtitle: "Family · October 2024 · Muir Woods, CA",
+    cover: "https://picsum.photos/seed/fam03/1600/900",
+    coverThumb: "https://picsum.photos/seed/fam03/800/600",
+    date: "October 12, 2024",
+    location: "Muir Woods, CA",
+    sets: [
+      { id: "all", label: "All Photos", photos: makePhotos([301,302,303,304,305,306,307,308,309,310,311,312,313,314], "rf") },
+      { id: "kids", label: "Kids", photos: makePhotos([301,303,305,307,309,311], "rfk") },
+      { id: "full-family", label: "Full Family", photos: makePhotos([302,304,306,308,310,312,314], "rff") },
+    ],
+  },
+  {
+    id: "ava-portraits",
+    title: "Ava — Senior Portraits",
+    subtitle: "Portrait · August 2024 · San Francisco, CA",
+    cover: "https://picsum.photos/seed/por04/1600/900",
+    coverThumb: "https://picsum.photos/seed/por04/800/600",
+    date: "August 20, 2024",
+    location: "San Francisco, CA",
+    sets: [
+      { id: "all", label: "All Photos", photos: makePhotos([401,402,403,404,405,406,407,408,409,410,411,412], "av") },
+      { id: "urban", label: "Urban", photos: makePhotos([401,403,405,407,409,411], "avu") },
+      { id: "golden-gate", label: "Golden Gate", photos: makePhotos([402,404,406,408,410,412], "avg") },
+    ],
+  },
+  {
+    id: "chen-wedding",
+    title: "Lily & Marcus",
+    subtitle: "Wedding · May 2024 · Carmel-by-the-Sea, CA",
+    cover: "https://picsum.photos/seed/wed05/1600/900",
+    coverThumb: "https://picsum.photos/seed/wed05/800/600",
+    date: "May 25, 2024",
+    location: "Carmel-by-the-Sea, CA",
+    sets: [
+      { id: "all", label: "All Photos", photos: makePhotos([501,502,503,504,505,506,507,508,509,510,511,512,513,514,515,516,517,518,519,520], "lm") },
+      { id: "ceremony", label: "Ceremony", photos: makePhotos([501,503,505,507,509,511,513,515], "lmc") },
+      { id: "reception", label: "Reception", photos: makePhotos([502,504,506,508,510,512,514,516,518,520], "lmr") },
+      { id: "portraits", label: "Portraits", photos: makePhotos([517,519], "lmp") },
+    ],
+  },
+  {
+    id: "newborn-patel",
+    title: "Baby Patel",
+    subtitle: "Newborn · November 2024 · Studio, San Francisco",
+    cover: "https://picsum.photos/seed/new06/1600/900",
+    coverThumb: "https://picsum.photos/seed/new06/800/600",
+    date: "November 3, 2024",
+    location: "San Francisco Studio",
+    sets: [
+      { id: "all", label: "All Photos", photos: makePhotos([601,602,603,604,605,606,607,608,609,610], "bp") },
+      { id: "baby", label: "Baby", photos: makePhotos([601,603,605,607,609], "bpb") },
+      { id: "family", label: "With Family", photos: makePhotos([602,604,606,608,610], "bpf") },
+    ],
+  },
+];
+
+/* ── Icons ── */
+const Icon = {
+  heart: (filled) => (
+    <svg viewBox="0 0 24 24" style={{width:'100%',height:'100%'}}>
+      <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"
+        style={{fill: filled ? '#e05555' : 'none', stroke: filled ? '#e05555' : 'currentColor', strokeWidth: 1.8}} />
+    </svg>
+  ),
+  download: () => <svg viewBox="0 0 24 24" style={{width:'100%',height:'100%'}}><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" strokeWidth="1.5"/><polyline points="7 10 12 15 17 10" strokeWidth="1.5"/><line x1="12" y1="15" x2="12" y2="3" strokeWidth="1.5"/></svg>,
+  share: () => <svg viewBox="0 0 24 24" style={{width:'100%',height:'100%'}}><circle cx="18" cy="5" r="3" strokeWidth="1.5"/><circle cx="6" cy="12" r="3" strokeWidth="1.5"/><circle cx="18" cy="19" r="3" strokeWidth="1.5"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49" strokeWidth="1.5"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49" strokeWidth="1.5"/></svg>,
+  close: () => <svg viewBox="0 0 24 24" style={{width:'100%',height:'100%'}}><line x1="18" y1="6" x2="6" y2="18" strokeWidth="1.5"/><line x1="6" y1="6" x2="18" y2="18" strokeWidth="1.5"/></svg>,
+  chevLeft: () => <svg viewBox="0 0 24 24" style={{width:'100%',height:'100%'}}><polyline points="15 18 9 12 15 6" strokeWidth="1.5"/></svg>,
+  chevRight: () => <svg viewBox="0 0 24 24" style={{width:'100%',height:'100%'}}><polyline points="9 18 15 12 9 6" strokeWidth="1.5"/></svg>,
+  chevDown: () => <svg viewBox="0 0 24 24" style={{width:'100%',height:'100%'}}><polyline points="6 9 12 15 18 9" strokeWidth="1.5"/></svg>,
+};
+
+/* ── Toast ── */
+function Toast({ msg }) {
+  return <div className="toast">{msg}</div>;
+}
+
+/* ── Nav ── */
+function Nav({ view, galleryTitle, onHome, transparent, dark, scrolled, favorites, onToggleFavs }) {
+  const solidClass = scrolled || !transparent ? 'solid' : '';
+  const darkClass = dark && !scrolled ? 'dark' : '';
+  return (
+    <nav className={`nav ${solidClass} ${darkClass}`}>
+      <button className="nav-logo" onClick={onHome}>{PHOTOGRAPHER}</button>
+      {view === 'gallery' && galleryTitle && (
+        <button className="nav-center" onClick={onHome} title="Back to all galleries">
+          {galleryTitle}
+        </button>
+      )}
+      <div className="nav-actions">
+        {view === 'gallery' && (
+          <>
+            <button className="nav-icon" title="Favorites" onClick={onToggleFavs}
+              style={favorites ? {background:'rgba(224,85,85,0.12)'} : {}}>
+              <span style={{width:18,height:18,display:'flex',alignItems:'center',justifyContent:'center'}}>
+                {Icon.heart(favorites)}
+              </span>
+            </button>
+            <button className="nav-icon" title="Download All">
+              <span style={{width:18,height:18,display:'block'}}>{Icon.download()}</span>
+            </button>
+            <button className="nav-icon" title="Share">
+              <span style={{width:18,height:18,display:'block'}}>{Icon.share()}</span>
+            </button>
+          </>
+        )}
+      </div>
+    </nav>
+  );
+}
+
+/* ── Lightbox ── */
+function Lightbox({ photos, index, liked, onClose, onPrev, onNext, onLike }) {
+  const photo = photos[index];
+  useEffect(() => {
+    const fn = (e) => {
+      if (e.key === 'ArrowLeft') onPrev();
+      if (e.key === 'ArrowRight') onNext();
+      if (e.key === 'Escape') onClose();
+    };
+    window.addEventListener('keydown', fn);
+    return () => window.removeEventListener('keydown', fn);
+  }, [onPrev, onNext, onClose]);
+
+  return (
+    <div className="lightbox" onClick={onClose}>
+      <button className="lb-close" onClick={onClose}>
+        <span style={{width:18,height:18,display:'block'}}>{Icon.close()}</span>
+      </button>
+      {index > 0 && (
+        <button className="lb-arrow lb-prev" onClick={e => { e.stopPropagation(); onPrev(); }}>
+          <span style={{width:20,height:20,display:'block'}}>{Icon.chevLeft()}</span>
+        </button>
+      )}
+      <img key={photo.id} className="lightbox-img" src={photo.src} alt="" onClick={e => e.stopPropagation()} />
+      {index < photos.length - 1 && (
+        <button className="lb-arrow lb-next" onClick={e => { e.stopPropagation(); onNext(); }}>
+          <span style={{width:20,height:20,display:'block'}}>{Icon.chevRight()}</span>
+        </button>
+      )}
+      <div className="lb-meta" onClick={e => e.stopPropagation()}>
+        <span>{index + 1} / {photos.length}</span>
+        <button className={`lb-heart ${liked ? 'liked' : ''}`} onClick={() => onLike(photo.id)}>
+          <span style={{width:16,height:16,display:'block'}}>{Icon.heart(liked)}</span>
+          <span>{liked ? 'Liked' : 'Like'}</span>
+        </button>
+        <button className="lb-heart">
+          <span style={{width:16,height:16,display:'block'}}>{Icon.download()}</span>
+          <span>Download</span>
+        </button>
+      </div>
+    </div>
+  );
+}
+
+/* ── Photo Grid ── */
+function PhotoGrid({ photos, likedIds, onPhotoClick, onLike }) {
+  return (
+    <div className="photo-grid">
+      {photos.map((photo, i) => {
+        const isLiked = likedIds.has(photo.id);
+        return (
+          <div key={photo.id} className="photo-item" onClick={() => onPhotoClick(i)}>
+            <img src={photo.thumb} alt="" loading="lazy" style={{ aspectRatio: photo.w + '/' + photo.h }} />
+            <div className="photo-item-overlay">
+              <button className={`heart-btn ${isLiked ? 'liked' : ''}`}
+                onClick={e => { e.stopPropagation(); onLike(photo.id); }}>
+                <span style={{width:15,height:15,display:'block'}}>{Icon.heart(isLiked)}</span>
+              </button>
+            </div>
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
+/* ── Gallery View ── */
+function GalleryView({ gallery, likedIds, onLike, onBack, showToast, heroHeight, navStyle }) {
+  const [activeSet, setActiveSet] = useState('all');
+  const [lightbox, setLightbox] = useState(null);
+  const [showFavs, setShowFavs] = useState(false);
+  const [scrolled, setScrolled] = useState(false);
+
+  useEffect(() => {
+    const fn = () => setScrolled(window.scrollY > 60);
+    window.addEventListener('scroll', fn, { passive: true });
+    return () => window.removeEventListener('scroll', fn);
+  }, []);
+
+  const currentSet = gallery.sets.find(s => s.id === activeSet) || gallery.sets[0];
+  const photos = showFavs ? currentSet.photos.filter(p => likedIds.has(p.id)) : currentSet.photos;
+  const heroH = heroHeight === 'full' ? '100vh' : heroHeight === 'half' ? '55vh' : '75vh';
+  const alwaysSolid = navStyle === 'always-solid';
+
+  const openLightbox = useCallback((i) => setLightbox(i), []);
+  const closeLightbox = useCallback(() => setLightbox(null), []);
+  const prevPhoto = useCallback(() => setLightbox(i => Math.max(0, i - 1)), []);
+  const nextPhoto = useCallback(() => setLightbox(i => Math.min(photos.length - 1, i + 1)), [photos.length]);
+
+  return (
+    <div>
+      <Nav
+        view="gallery"
+        galleryTitle={gallery.title}
+        onHome={onBack}
+        transparent={!alwaysSolid}
+        dark={!alwaysSolid}
+        scrolled={scrolled || alwaysSolid}
+        favorites={showFavs}
+        onToggleFavs={() => setShowFavs(f => !f)}
+      />
+
+      {/* Hero */}
+      <div className="gallery-hero" style={{height: heroH}}>
+        <img src={gallery.cover} alt={gallery.title} />
+        <div className="gallery-hero-overlay" />
+        <div className="gallery-hero-content">
+          <h1>{gallery.title}</h1>
+          <p>{gallery.date} &nbsp;·&nbsp; {gallery.location}</p>
+        </div>
+        <div className="hero-scroll-hint">
+          <span>Scroll</span>
+          <span style={{width:16,height:16,display:'block'}}>{Icon.chevDown()}</span>
+        </div>
+      </div>
+
+      {/* Sets nav */}
+      {gallery.sets.length > 1 && (
+        <div className="sets-nav">
+          {gallery.sets.map(s => (
+            <button key={s.id} className={`set-tab ${activeSet === s.id ? 'active' : ''}`}
+              onClick={() => { setActiveSet(s.id); setShowFavs(false); }}>
+              {s.label} <span style={{opacity:0.45,marginLeft:4}}>{s.photos.length}</span>
+            </button>
+          ))}
+        </div>
+      )}
+
+      {/* Back */}
+      <div style={{padding:'20px 24px 4px'}}>
+        <button className="back-btn" onClick={onBack}>
+          <span style={{width:14,height:14,display:'block'}}>{Icon.chevLeft()}</span>
+          All Galleries
+        </button>
+      </div>
+
+      {/* Favorites empty state */}
+      {showFavs && photos.length === 0 && (
+        <div style={{textAlign:'center',padding:'80px 32px',color:'var(--fg2)'}}>
+          <p style={{fontFamily:'var(--serif)',fontSize:22,marginBottom:8}}>No favorites yet</p>
+          <p style={{fontSize:12,letterSpacing:'0.08em'}}>Hover over a photo and click the heart to save favorites</p>
+        </div>
+      )}
+
+      <div style={{paddingTop:8}}>
+        <PhotoGrid photos={photos} likedIds={likedIds} onPhotoClick={openLightbox}
+          onLike={(id) => {
+            onLike(id);
+            showToast(likedIds.has(id) ? 'Removed from favorites' : 'Added to favorites');
+          }} />
+      </div>
+
+      <div className="gallery-footer">
+        <p>© {new Date().getFullYear()} {PHOTOGRAPHER} &nbsp;·&nbsp; All rights reserved</p>
+      </div>
+
+      {lightbox !== null && (
+        <Lightbox
+          photos={photos}
+          index={lightbox}
+          liked={likedIds.has(photos[lightbox]?.id)}
+          onClose={closeLightbox}
+          onPrev={prevPhoto}
+          onNext={nextPhoto}
+          onLike={(id) => {
+            onLike(id);
+            showToast(likedIds.has(id) ? 'Removed from favorites' : 'Added to favorites');
+          }}
+        />
+      )}
+    </div>
+  );
+}
+
+/* ── Home View ── */
+function HomeView({ onSelectGallery }) {
+  const [scrolled, setScrolled] = useState(false);
+  useEffect(() => {
+    const fn = () => setScrolled(window.scrollY > 10);
+    window.addEventListener('scroll', fn, { passive: true });
+    return () => window.removeEventListener('scroll', fn);
+  }, []);
+
+  return (
+    <div>
+      <Nav view="home" onHome={() => {}} transparent={false} scrolled={true} />
+      <div className="home-header">
+        <h1>{PHOTOGRAPHER}</h1>
+        <p>Photography &nbsp;·&nbsp; San Francisco, CA</p>
+      </div>
+      <div className="gallery-grid">
+        {GALLERIES.map(g => (
+          <div key={g.id} className="gallery-card" onClick={() => onSelectGallery(g)}>
+            <img src={g.coverThumb} alt={g.title} loading="lazy" />
+            <div className="gallery-card-overlay">
+              <div className="gallery-card-title">{g.title}</div>
+              <div className="gallery-card-meta">{g.subtitle}</div>
+            </div>
+            <div className="gallery-card-count">{g.sets[0].photos.length} photos</div>
+          </div>
+        ))}
+      </div>
+      <div className="gallery-footer">
+        <p>© {new Date().getFullYear()} {PHOTOGRAPHER} Photography</p>
+      </div>
+    </div>
+  );
+}
+
+/* ── App ── */
+function App() {
+  const [view, setView] = useState('home');
+  const [activeGallery, setActiveGallery] = useState(null);
+  const [likedIds, setLikedIds] = useState(() => {
+    try { return new Set(JSON.parse(localStorage.getItem('gallery_liked') || '[]')); }
+    catch { return new Set(); }
+  });
+  const [toast, setToast] = useState(null);
+  const toastTimer = useRef(null);
+  const [tweaks, setTweak] = useTweaks(TWEAK_DEFAULTS);
+
+  useEffect(() => {
+    document.documentElement.style.setProperty('--accent', tweaks.accentColor);
+  }, [tweaks.accentColor]);
+
+  const gap = tweaks.photoSpacing === 'tight' ? '3px' : tweaks.photoSpacing === 'comfortable' ? '8px' : '16px';
+  const cols = tweaks.gridColumns;
+
+  const showToast = useCallback((msg) => {
+    setToast(msg);
+    clearTimeout(toastTimer.current);
+    toastTimer.current = setTimeout(() => setToast(null), 2200);
+  }, []);
+
+  const toggleLike = useCallback((id) => {
+    setLikedIds(prev => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id); else next.add(id);
+      localStorage.setItem('gallery_liked', JSON.stringify([...next]));
+      return next;
+    });
+  }, []);
+
+  const selectGallery = useCallback((g) => {
+    setActiveGallery(g);
+    setView('gallery');
+    window.scrollTo(0, 0);
+  }, []);
+
+  const goHome = useCallback(() => {
+    setView('home');
+    setActiveGallery(null);
+    window.scrollTo(0, 0);
+  }, []);
+
+  return (
+    <>
+      <style>{`
+        .photo-grid { columns: ${cols}; column-gap: ${gap}; padding: ${gap}; }
+        .photo-item { margin-bottom: ${gap}; }
+        @media (max-width: 900px) { .photo-grid { columns: ${Math.max(1, parseInt(cols) - 1)}; } }
+        @media (max-width: 560px) { .photo-grid { columns: 1; } }
+      `}</style>
+
+      {view === 'home' && <HomeView onSelectGallery={selectGallery} />}
+      {view === 'gallery' && activeGallery && (
+        <GalleryView
+          gallery={activeGallery}
+          likedIds={likedIds}
+          onLike={toggleLike}
+          onBack={goHome}
+          showToast={showToast}
+          heroHeight={tweaks.heroHeight}
+          navStyle={tweaks.navStyle}
+        />
+      )}
+      {toast && <Toast msg={toast} />}
+
+      <TweaksPanel>
+        <TweakSection label="Layout">
+          <TweakRadio
+            label="Photo Columns"
+            value={tweaks.gridColumns}
+            options={[{label:'2',value:'2'},{label:'3',value:'3'},{label:'4',value:'4'}]}
+            onChange={v => setTweak('gridColumns', v)}
+          />
+          <TweakRadio
+            label="Spacing"
+            value={tweaks.photoSpacing}
+            options={[{label:'Tight',value:'tight'},{label:'Comfy',value:'comfortable'},{label:'Airy',value:'airy'}]}
+            onChange={v => setTweak('photoSpacing', v)}
+          />
+        </TweakSection>
+        <TweakSection label="Hero">
+          <TweakRadio
+            label="Hero Height"
+            value={tweaks.heroHeight}
+            options={[{label:'Half',value:'half'},{label:'Tall',value:'tall'},{label:'Full',value:'full'}]}
+            onChange={v => setTweak('heroHeight', v)}
+          />
+          <TweakRadio
+            label="Nav"
+            value={tweaks.navStyle}
+            options={[{label:'Glass',value:'transparent'},{label:'Solid',value:'always-solid'}]}
+            onChange={v => setTweak('navStyle', v)}
+          />
+        </TweakSection>
+        <TweakSection label="Branding">
+          <TweakColor
+            label="Accent Color"
+            value={tweaks.accentColor}
+            onChange={v => setTweak('accentColor', v)}
+          />
+        </TweakSection>
+      </TweaksPanel>
+    </>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById('root')).render(<App />);
+</script>
+</body>
+</html>
