@@ -274,6 +274,18 @@
       color: var(--accent); padding: 4px 10px; border: 1px solid var(--accent);
       border-radius: 20px; margin-right: 8px;
     }
+    .admin-login-btn {
+      background: none; border: 1px solid currentColor; cursor: pointer;
+      color: inherit; font-family: var(--sans);
+      font-size: 11px; letter-spacing: 0.14em; text-transform: uppercase;
+      padding: 7px 14px; border-radius: 20px;
+      display: flex; align-items: center; gap: 6px;
+      transition: background 0.15s, color 0.15s, opacity 0.15s;
+      opacity: 0.85;
+    }
+    .admin-login-btn:hover { opacity: 1; background: rgba(0,0,0,0.05); }
+    .nav.dark:not(.solid) .admin-login-btn:hover { background: rgba(255,255,255,0.12); }
+    .admin-login-btn svg { width: 12px; height: 12px; stroke: currentColor; fill: none; stroke-width: 1.8; }
     .modal-backdrop {
       position: fixed; inset: 0; z-index: 500; background: rgba(8,7,5,0.7);
       display: flex; align-items: center; justify-content: center;
@@ -649,8 +661,9 @@ function Nav({ view, galleryTitle, onHome, transparent, dark, scrolled, favorite
             </button>
           </>
         ) : (
-          <button className="nav-icon" title="Admin login" onClick={onLoginClick}>
-            <span style={{width:18,height:18,display:'block'}}>{Icon.lock()}</span>
+          <button className="admin-login-btn" title="Admin login" onClick={onLoginClick}>
+            <span style={{width:12,height:12,display:'block'}}>{Icon.lock()}</span>
+            <span>Admin</span>
           </button>
         )}
       </div>
