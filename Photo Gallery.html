@@ -10,6 +10,7 @@
   <script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
   <script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" crossorigin="anonymous"></script>
   <script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+  <script src="https://unpkg.com/exifr@7.1.3/dist/full.umd.js"></script>
   <script type="text/babel" src="tweaks-panel.jsx"></script>
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -266,6 +267,177 @@
     }
     .back-btn:hover { color: var(--fg); }
     .back-btn svg { width: 14px; height: 14px; stroke: currentColor; fill: none; stroke-width: 1.5; }
+
+    /* Admin */
+    .admin-badge {
+      font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase;
+      color: var(--accent); padding: 4px 10px; border: 1px solid var(--accent);
+      border-radius: 20px; margin-right: 8px;
+    }
+    .admin-login-btn {
+      background: none; border: 1px solid currentColor; cursor: pointer;
+      color: inherit; font-family: var(--sans);
+      font-size: 11px; letter-spacing: 0.14em; text-transform: uppercase;
+      padding: 7px 14px; border-radius: 20px;
+      display: flex; align-items: center; gap: 6px;
+      transition: background 0.15s, color 0.15s, opacity 0.15s;
+      opacity: 0.85;
+    }
+    .admin-login-btn:hover { opacity: 1; background: rgba(0,0,0,0.05); }
+    .nav.dark:not(.solid) .admin-login-btn:hover { background: rgba(255,255,255,0.12); }
+    .admin-login-btn svg { width: 12px; height: 12px; stroke: currentColor; fill: none; stroke-width: 1.8; }
+    .modal-backdrop {
+      position: fixed; inset: 0; z-index: 500; background: rgba(8,7,5,0.7);
+      display: flex; align-items: center; justify-content: center;
+      animation: lbIn 0.2s ease; padding: 20px;
+    }
+    .modal {
+      background: var(--white); border-radius: 8px; max-width: 560px; width: 100%;
+      max-height: 90vh; overflow-y: auto;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+    }
+    .modal-header {
+      padding: 24px 28px 16px; border-bottom: 1px solid rgba(0,0,0,0.08);
+      display: flex; align-items: center; justify-content: space-between;
+    }
+    .modal-header h2 {
+      font-family: var(--serif); font-weight: 400; font-size: 22px; letter-spacing: 0.02em;
+    }
+    .modal-close {
+      background: none; border: none; cursor: pointer; color: var(--fg2);
+      width: 32px; height: 32px; border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      transition: background 0.15s;
+    }
+    .modal-close:hover { background: rgba(0,0,0,0.06); color: var(--fg); }
+    .modal-close svg { width: 16px; height: 16px; stroke: currentColor; fill: none; stroke-width: 1.5; }
+    .modal-body { padding: 20px 28px 28px; }
+    .form-row { margin-bottom: 14px; }
+    .form-row label {
+      display: block; font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase;
+      color: var(--fg2); margin-bottom: 6px;
+    }
+    .form-row input[type="text"], .form-row input[type="password"], .form-row input[type="url"],
+    .form-row textarea {
+      width: 100%; padding: 10px 12px; border: 1px solid rgba(0,0,0,0.15);
+      border-radius: 4px; font-family: var(--sans); font-size: 13px; color: var(--fg);
+      background: var(--white); outline: none; transition: border-color 0.15s;
+    }
+    .form-row input:focus, .form-row textarea:focus { border-color: var(--accent); }
+    .form-row textarea { min-height: 70px; resize: vertical; }
+    .form-error {
+      font-size: 12px; color: #c44; margin-top: 8px;
+    }
+    .btn-primary {
+      background: var(--fg); color: var(--white); border: none;
+      padding: 10px 20px; border-radius: 4px; cursor: pointer;
+      font-family: var(--sans); font-size: 12px; letter-spacing: 0.08em;
+      text-transform: uppercase; transition: background 0.15s;
+    }
+    .btn-primary:hover { background: var(--accent); }
+    .btn-secondary {
+      background: transparent; color: var(--fg); border: 1px solid rgba(0,0,0,0.15);
+      padding: 10px 20px; border-radius: 4px; cursor: pointer;
+      font-family: var(--sans); font-size: 12px; letter-spacing: 0.08em;
+      text-transform: uppercase; transition: background 0.15s;
+    }
+    .btn-secondary:hover { background: rgba(0,0,0,0.04); }
+    .btn-danger {
+      background: transparent; color: #c44; border: 1px solid #c44;
+      padding: 10px 20px; border-radius: 4px; cursor: pointer;
+      font-family: var(--sans); font-size: 12px; letter-spacing: 0.08em;
+      text-transform: uppercase; transition: all 0.15s;
+    }
+    .btn-danger:hover { background: #c44; color: var(--white); }
+    .btn-row { display: flex; gap: 10px; justify-content: flex-end; margin-top: 20px; flex-wrap: wrap; }
+
+    .gallery-card-edit {
+      position: absolute; top: 16px; left: 16px;
+      background: rgba(0,0,0,0.55); color: rgba(255,255,255,0.95);
+      font-size: 11px; letter-spacing: 0.1em; padding: 6px 12px; border-radius: 20px;
+      backdrop-filter: blur(4px); border: none; cursor: pointer;
+      text-transform: uppercase; transition: background 0.15s;
+    }
+    .gallery-card-edit:hover { background: rgba(0,0,0,0.75); }
+
+    .new-gallery-card {
+      aspect-ratio: 4/3; background: var(--bg2);
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      cursor: pointer; border: 2px dashed rgba(0,0,0,0.15);
+      transition: background 0.15s, border-color 0.15s;
+    }
+    .new-gallery-card:hover { background: var(--bg); border-color: var(--accent); }
+    .new-gallery-card .plus {
+      font-family: var(--serif); font-size: 48px; font-weight: 300; color: var(--fg2);
+      line-height: 1;
+    }
+    .new-gallery-card .label {
+      font-size: 11px; letter-spacing: 0.14em; text-transform: uppercase;
+      color: var(--fg2); margin-top: 12px;
+    }
+
+    .photo-edit-list {
+      display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+      gap: 8px; margin-top: 8px;
+    }
+    .photo-edit-item {
+      position: relative; aspect-ratio: 4/3; background: var(--bg2);
+      overflow: hidden; border-radius: 4px;
+    }
+    .photo-edit-item img { width: 100%; height: 100%; object-fit: cover; display: block; }
+    .photo-edit-remove {
+      position: absolute; top: 4px; right: 4px;
+      width: 22px; height: 22px; border-radius: 50%; border: none;
+      background: rgba(0,0,0,0.65); color: #fff; cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 14px; line-height: 1;
+    }
+    .photo-edit-remove:hover { background: #c44; }
+    .photo-add-row { display: flex; gap: 8px; margin-top: 10px; }
+    .photo-add-row input { flex: 1; }
+    .set-block {
+      border: 1px solid rgba(0,0,0,0.08); border-radius: 6px;
+      padding: 14px; margin-bottom: 14px; background: var(--bg);
+    }
+    .set-header {
+      display: flex; align-items: center; justify-content: space-between;
+      margin-bottom: 10px; gap: 8px;
+    }
+    .set-header input {
+      flex: 1; padding: 6px 10px; border: 1px solid rgba(0,0,0,0.12);
+      border-radius: 4px; font-family: var(--sans); font-size: 13px;
+      background: var(--white);
+    }
+
+    /* EXIF panel */
+    .exif-toggle {
+      position: fixed; top: 20px; left: 20px; z-index: 10;
+      background: rgba(255,255,255,0.1); backdrop-filter: blur(6px);
+      color: #fff; border: none; padding: 8px 14px; border-radius: 20px;
+      font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase;
+      cursor: pointer; transition: background 0.15s;
+    }
+    .exif-toggle:hover { background: rgba(255,255,255,0.2); }
+    .exif-toggle.active { background: rgba(139,115,85,0.5); }
+    .exif-panel {
+      position: fixed; top: 76px; left: 20px; z-index: 10;
+      max-width: 280px; padding: 16px 18px;
+      background: rgba(20,18,15,0.85); backdrop-filter: blur(8px);
+      color: #fff; border-radius: 8px; font-size: 12px; line-height: 1.6;
+      animation: lbIn 0.2s ease;
+    }
+    .exif-panel h4 {
+      font-family: var(--serif); font-size: 14px; font-weight: 400;
+      margin-bottom: 8px; padding-bottom: 6px;
+      border-bottom: 1px solid rgba(255,255,255,0.15);
+      letter-spacing: 0.05em;
+    }
+    .exif-panel .row {
+      display: flex; justify-content: space-between; gap: 12px;
+      color: rgba(255,255,255,0.85);
+    }
+    .exif-panel .row .k { color: rgba(255,255,255,0.55); font-size: 11px; letter-spacing: 0.06em; }
+    .exif-panel .empty { color: rgba(255,255,255,0.5); font-style: italic; }
   </style>
 </head>
 <body>
@@ -282,6 +454,8 @@ const TWEAK_DEFAULTS = /*EDITMODE-BEGIN*/{
 }/*EDITMODE-END*/;
 
 const PHOTOGRAPHER = "Chris Ruth";
+const ADMIN_PASSWORD = "admin"; // demo password — client-side gate only
+const GALLERY_STORAGE_KEY = "gallery_data_v1";
 
 function makePhotos(seeds, setLabel) {
   return seeds.map((seed, i) => ({
@@ -291,6 +465,48 @@ function makePhotos(seeds, setLabel) {
     w: seed % 3 === 0 ? 900 : 1200,
     h: seed % 3 === 0 ? 1200 : (seed % 2 === 0 ? 800 : 900),
   }));
+}
+
+function uid(prefix) {
+  return `${prefix}-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 7)}`;
+}
+
+function useAdmin() {
+  const [isAdmin, setIsAdmin] = useState(() => {
+    try { return sessionStorage.getItem('admin_session') === '1'; } catch { return false; }
+  });
+  const login = useCallback((pw) => {
+    if (pw === ADMIN_PASSWORD) {
+      try { sessionStorage.setItem('admin_session', '1'); } catch {}
+      setIsAdmin(true);
+      return true;
+    }
+    return false;
+  }, []);
+  const logout = useCallback(() => {
+    try { sessionStorage.removeItem('admin_session'); } catch {}
+    setIsAdmin(false);
+  }, []);
+  return { isAdmin, login, logout };
+}
+
+function useGalleries(initial) {
+  const [galleries, setGalleries] = useState(() => {
+    try {
+      const stored = localStorage.getItem(GALLERY_STORAGE_KEY);
+      if (stored) return JSON.parse(stored);
+    } catch {}
+    return initial;
+  });
+  const persist = useCallback((next) => {
+    setGalleries(next);
+    try { localStorage.setItem(GALLERY_STORAGE_KEY, JSON.stringify(next)); } catch {}
+  }, []);
+  const reset = useCallback(() => {
+    try { localStorage.removeItem(GALLERY_STORAGE_KEY); } catch {}
+    setGalleries(initial);
+  }, [initial]);
+  return [galleries, persist, reset];
 }
 
 const GALLERIES = [
@@ -396,6 +612,10 @@ const Icon = {
   chevLeft: () => <svg viewBox="0 0 24 24" style={{width:'100%',height:'100%'}}><polyline points="15 18 9 12 15 6" strokeWidth="1.5"/></svg>,
   chevRight: () => <svg viewBox="0 0 24 24" style={{width:'100%',height:'100%'}}><polyline points="9 18 15 12 9 6" strokeWidth="1.5"/></svg>,
   chevDown: () => <svg viewBox="0 0 24 24" style={{width:'100%',height:'100%'}}><polyline points="6 9 12 15 18 9" strokeWidth="1.5"/></svg>,
+  lock: () => <svg viewBox="0 0 24 24" style={{width:'100%',height:'100%'}}><rect x="3" y="11" width="18" height="11" rx="2" ry="2" strokeWidth="1.5"/><path d="M7 11V7a5 5 0 0 1 10 0v4" strokeWidth="1.5"/></svg>,
+  logout: () => <svg viewBox="0 0 24 24" style={{width:'100%',height:'100%'}}><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" strokeWidth="1.5"/><polyline points="16 17 21 12 16 7" strokeWidth="1.5"/><line x1="21" y1="12" x2="9" y2="12" strokeWidth="1.5"/></svg>,
+  edit: () => <svg viewBox="0 0 24 24" style={{width:'100%',height:'100%'}}><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" strokeWidth="1.5"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" strokeWidth="1.5"/></svg>,
+  info: () => <svg viewBox="0 0 24 24" style={{width:'100%',height:'100%'}}><circle cx="12" cy="12" r="10" strokeWidth="1.5"/><line x1="12" y1="16" x2="12" y2="12" strokeWidth="1.5"/><line x1="12" y1="8" x2="12.01" y2="8" strokeWidth="1.5"/></svg>,
 };
 
 /* ── Toast ── */
@@ -404,7 +624,8 @@ function Toast({ msg }) {
 }
 
 /* ── Nav ── */
-function Nav({ view, galleryTitle, onHome, transparent, dark, scrolled, favorites, onToggleFavs }) {
+function Nav({ view, galleryTitle, onHome, transparent, dark, scrolled, favorites, onToggleFavs,
+              isAdmin, onLoginClick, onLogout }) {
   const solidClass = scrolled || !transparent ? 'solid' : '';
   const darkClass = dark && !scrolled ? 'dark' : '';
   return (
@@ -432,29 +653,322 @@ function Nav({ view, galleryTitle, onHome, transparent, dark, scrolled, favorite
             </button>
           </>
         )}
+        {isAdmin ? (
+          <>
+            <span className="admin-badge">Admin</span>
+            <button className="nav-icon" title="Log out of admin" onClick={onLogout}>
+              <span style={{width:18,height:18,display:'block'}}>{Icon.logout()}</span>
+            </button>
+          </>
+        ) : (
+          <button className="admin-login-btn" title="Admin login" onClick={onLoginClick}>
+            <span style={{width:12,height:12,display:'block'}}>{Icon.lock()}</span>
+            <span>Admin</span>
+          </button>
+        )}
       </div>
     </nav>
   );
 }
 
+/* ── Admin Login Modal ── */
+function AdminLoginModal({ onClose, onSubmit }) {
+  const [pw, setPw] = useState('');
+  const [error, setError] = useState('');
+  const inputRef = useRef(null);
+  useEffect(() => { inputRef.current?.focus(); }, []);
+  useEffect(() => {
+    const fn = (e) => { if (e.key === 'Escape') onClose(); };
+    window.addEventListener('keydown', fn);
+    return () => window.removeEventListener('keydown', fn);
+  }, [onClose]);
+  const submit = (e) => {
+    e.preventDefault();
+    if (!onSubmit(pw)) setError('Incorrect password');
+  };
+  return (
+    <div className="modal-backdrop" onClick={onClose}>
+      <div className="modal" onClick={e => e.stopPropagation()}>
+        <div className="modal-header">
+          <h2>Admin Login</h2>
+          <button className="modal-close" onClick={onClose}>{Icon.close()}</button>
+        </div>
+        <form className="modal-body" onSubmit={submit}>
+          <div className="form-row">
+            <label>Password</label>
+            <input ref={inputRef} type="password" value={pw}
+              onChange={e => { setPw(e.target.value); setError(''); }}
+              placeholder="Enter admin password" />
+            {error && <div className="form-error">{error}</div>}
+            <p style={{fontSize:11,color:'var(--fg2)',marginTop:10,letterSpacing:'0.04em'}}>
+              Demo password: <code>admin</code>. Edits persist locally in your browser.
+            </p>
+          </div>
+          <div className="btn-row">
+            <button type="button" className="btn-secondary" onClick={onClose}>Cancel</button>
+            <button type="submit" className="btn-primary">Sign in</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  );
+}
+
+/* ── Gallery Editor Modal ── */
+function GalleryEditor({ gallery, isNew, onClose, onSave, onDelete }) {
+  const [draft, setDraft] = useState(() => {
+    if (gallery) return JSON.parse(JSON.stringify(gallery));
+    return {
+      id: uid('gal'),
+      title: '', subtitle: '', cover: '', coverThumb: '',
+      date: '', location: '',
+      sets: [{ id: 'all', label: 'All Photos', photos: [] }],
+    };
+  });
+  const [error, setError] = useState('');
+
+  const update = (patch) => setDraft(d => ({ ...d, ...patch }));
+  const updateSet = (idx, patch) => setDraft(d => ({
+    ...d,
+    sets: d.sets.map((s, i) => i === idx ? { ...s, ...patch } : s),
+  }));
+  const addSet = () => setDraft(d => ({
+    ...d,
+    sets: [...d.sets, { id: uid('set'), label: 'New Set', photos: [] }],
+  }));
+  const removeSet = (idx) => setDraft(d => ({
+    ...d, sets: d.sets.filter((_, i) => i !== idx),
+  }));
+  const addPhotoToSet = (idx, url, thumbUrl) => {
+    if (!url) return;
+    const photo = {
+      id: uid('p'),
+      src: url,
+      thumb: thumbUrl || url,
+      w: 1200, h: 900,
+    };
+    setDraft(d => ({
+      ...d,
+      sets: d.sets.map((s, i) => i === idx ? { ...s, photos: [...s.photos, photo] } : s),
+    }));
+  };
+  const removePhotoFromSet = (idx, photoId) => setDraft(d => ({
+    ...d,
+    sets: d.sets.map((s, i) => i === idx ? { ...s, photos: s.photos.filter(p => p.id !== photoId) } : s),
+  }));
+
+  const handleSave = () => {
+    if (!draft.title.trim()) { setError('Title is required'); return; }
+    if (!draft.cover.trim()) { setError('Cover image URL is required'); return; }
+    const cleaned = {
+      ...draft,
+      coverThumb: draft.coverThumb || draft.cover,
+      sets: draft.sets.length ? draft.sets : [{ id: 'all', label: 'All Photos', photos: [] }],
+    };
+    onSave(cleaned);
+  };
+
+  return (
+    <div className="modal-backdrop" onClick={onClose}>
+      <div className="modal" style={{maxWidth: 720}} onClick={e => e.stopPropagation()}>
+        <div className="modal-header">
+          <h2>{isNew ? 'New Gallery' : 'Edit Gallery'}</h2>
+          <button className="modal-close" onClick={onClose}>{Icon.close()}</button>
+        </div>
+        <div className="modal-body">
+          <div className="form-row">
+            <label>Title *</label>
+            <input type="text" value={draft.title} onChange={e => update({title: e.target.value})} placeholder="e.g. Sarah & James" />
+          </div>
+          <div className="form-row">
+            <label>Subtitle</label>
+            <input type="text" value={draft.subtitle} onChange={e => update({subtitle: e.target.value})} placeholder="e.g. Engagement · July 2024 · Marin Headlands, CA" />
+          </div>
+          <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:14}}>
+            <div className="form-row">
+              <label>Date</label>
+              <input type="text" value={draft.date} onChange={e => update({date: e.target.value})} placeholder="July 6, 2024" />
+            </div>
+            <div className="form-row">
+              <label>Location</label>
+              <input type="text" value={draft.location} onChange={e => update({location: e.target.value})} placeholder="Marin Headlands, CA" />
+            </div>
+          </div>
+          <div className="form-row">
+            <label>Cover Image URL *</label>
+            <input type="url" value={draft.cover} onChange={e => update({cover: e.target.value, coverThumb: draft.coverThumb || e.target.value})} placeholder="https://..." />
+          </div>
+          <div className="form-row">
+            <label>Cover Thumbnail URL (optional)</label>
+            <input type="url" value={draft.coverThumb} onChange={e => update({coverThumb: e.target.value})} placeholder="Defaults to cover URL" />
+          </div>
+
+          <div style={{marginTop:24,marginBottom:10,display:'flex',justifyContent:'space-between',alignItems:'center'}}>
+            <label style={{fontSize:11,letterSpacing:'0.1em',textTransform:'uppercase',color:'var(--fg2)'}}>Photo Sets</label>
+            <button type="button" className="btn-secondary" onClick={addSet}>+ Add Set</button>
+          </div>
+
+          {draft.sets.map((s, idx) => (
+            <SetEditor
+              key={s.id}
+              set={s}
+              canRemove={draft.sets.length > 1}
+              onLabelChange={(v) => updateSet(idx, { label: v })}
+              onRemove={() => removeSet(idx)}
+              onAddPhoto={(url, thumb) => addPhotoToSet(idx, url, thumb)}
+              onRemovePhoto={(pid) => removePhotoFromSet(idx, pid)}
+            />
+          ))}
+
+          {error && <div className="form-error">{error}</div>}
+
+          <div className="btn-row">
+            {!isNew && onDelete && (
+              <button className="btn-danger" onClick={() => {
+                if (window.confirm(`Delete gallery "${draft.title}"? This cannot be undone.`)) onDelete();
+              }} style={{marginRight:'auto'}}>Delete Gallery</button>
+            )}
+            <button className="btn-secondary" onClick={onClose}>Cancel</button>
+            <button className="btn-primary" onClick={handleSave}>Save</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function SetEditor({ set, canRemove, onLabelChange, onRemove, onAddPhoto, onRemovePhoto }) {
+  const [url, setUrl] = useState('');
+  const [thumb, setThumb] = useState('');
+  const submit = (e) => {
+    if (e) e.preventDefault();
+    if (!url.trim()) return;
+    onAddPhoto(url.trim(), thumb.trim());
+    setUrl(''); setThumb('');
+  };
+  return (
+    <div className="set-block">
+      <div className="set-header">
+        <input type="text" value={set.label} onChange={e => onLabelChange(e.target.value)} placeholder="Set label" />
+        <span style={{fontSize:11,color:'var(--fg2)',letterSpacing:'0.08em'}}>{set.photos.length} photos</span>
+        {canRemove && (
+          <button type="button" className="btn-secondary" style={{padding:'6px 12px'}} onClick={onRemove}>Remove</button>
+        )}
+      </div>
+      {set.photos.length > 0 && (
+        <div className="photo-edit-list">
+          {set.photos.map(p => (
+            <div key={p.id} className="photo-edit-item">
+              <img src={p.thumb} alt="" loading="lazy" />
+              <button type="button" className="photo-edit-remove" title="Remove photo"
+                onClick={() => onRemovePhoto(p.id)}>×</button>
+            </div>
+          ))}
+        </div>
+      )}
+      <form className="photo-add-row" onSubmit={submit}>
+        <input type="url" placeholder="Photo URL (https://...)" value={url} onChange={e => setUrl(e.target.value)} />
+        <input type="url" placeholder="Thumbnail URL (optional)" value={thumb} onChange={e => setThumb(e.target.value)} style={{maxWidth:200}} />
+        <button type="submit" className="btn-secondary" style={{whiteSpace:'nowrap'}}>+ Add</button>
+      </form>
+    </div>
+  );
+}
+
+/* ── EXIF Panel ── */
+function ExifPanel({ src }) {
+  const [data, setData] = useState(null);
+  const [status, setStatus] = useState('loading');
+  useEffect(() => {
+    let cancelled = false;
+    setStatus('loading'); setData(null);
+    if (typeof window.exifr === 'undefined') {
+      setStatus('error');
+      return;
+    }
+    window.exifr.parse(src, { tiff: true, exif: true, gps: false })
+      .then(d => {
+        if (cancelled) return;
+        if (!d || Object.keys(d).length === 0) setStatus('empty');
+        else { setData(d); setStatus('ok'); }
+      })
+      .catch(() => { if (!cancelled) setStatus('error'); });
+    return () => { cancelled = true; };
+  }, [src]);
+
+  const fmtShutter = (v) => {
+    if (!v) return null;
+    if (v >= 1) return `${v}s`;
+    return `1/${Math.round(1 / v)}s`;
+  };
+  const fmtDate = (d) => {
+    if (!d) return null;
+    try { return new Date(d).toLocaleString(); } catch { return String(d); }
+  };
+
+  const rows = [];
+  if (data) {
+    const camera = [data.Make, data.Model].filter(Boolean).join(' ').trim();
+    if (camera) rows.push(['Camera', camera]);
+    if (data.LensModel) rows.push(['Lens', data.LensModel]);
+    if (data.FocalLength) rows.push(['Focal', `${Math.round(data.FocalLength)}mm`]);
+    if (data.FNumber) rows.push(['Aperture', `f/${data.FNumber}`]);
+    const shutter = fmtShutter(data.ExposureTime);
+    if (shutter) rows.push(['Shutter', shutter]);
+    if (data.ISO) rows.push(['ISO', data.ISO]);
+    const date = fmtDate(data.DateTimeOriginal || data.CreateDate);
+    if (date) rows.push(['Taken', date]);
+    if (data.ImageWidth && data.ImageHeight) rows.push(['Dimensions', `${data.ImageWidth} × ${data.ImageHeight}`]);
+  }
+
+  return (
+    <div className="exif-panel" onClick={e => e.stopPropagation()}>
+      <h4>EXIF</h4>
+      {status === 'loading' && <div className="empty">Reading metadata…</div>}
+      {status === 'error' && <div className="empty">Couldn't read EXIF (CORS or unsupported source)</div>}
+      {status === 'empty' && <div className="empty">No EXIF data in this image</div>}
+      {status === 'ok' && rows.length === 0 && <div className="empty">No common EXIF tags found</div>}
+      {status === 'ok' && rows.map(([k, v]) => (
+        <div className="row" key={k}>
+          <span className="k">{k}</span>
+          <span>{v}</span>
+        </div>
+      ))}
+    </div>
+  );
+}
+
 /* ── Lightbox ── */
-function Lightbox({ photos, index, liked, onClose, onPrev, onNext, onLike }) {
+function Lightbox({ photos, index, liked, onClose, onPrev, onNext, onLike, isAdmin }) {
   const photo = photos[index];
+  const [showExif, setShowExif] = useState(false);
   useEffect(() => {
     const fn = (e) => {
       if (e.key === 'ArrowLeft') onPrev();
       if (e.key === 'ArrowRight') onNext();
       if (e.key === 'Escape') onClose();
+      if (e.key === 'i' || e.key === 'I') { if (isAdmin) setShowExif(s => !s); }
     };
     window.addEventListener('keydown', fn);
     return () => window.removeEventListener('keydown', fn);
-  }, [onPrev, onNext, onClose]);
+  }, [onPrev, onNext, onClose, isAdmin]);
 
   return (
     <div className="lightbox" onClick={onClose}>
       <button className="lb-close" onClick={onClose}>
         <span style={{width:18,height:18,display:'block'}}>{Icon.close()}</span>
       </button>
+      {isAdmin && (
+        <button className={`exif-toggle ${showExif ? 'active' : ''}`}
+          onClick={e => { e.stopPropagation(); setShowExif(s => !s); }}
+          title="Toggle EXIF data (i)">
+          <span style={{display:'inline-flex',alignItems:'center',gap:6}}>
+            <span style={{width:14,height:14,display:'inline-block'}}>{Icon.info()}</span>
+            EXIF
+          </span>
+        </button>
+      )}
+      {isAdmin && showExif && <ExifPanel src={photo.src} />}
       {index > 0 && (
         <button className="lb-arrow lb-prev" onClick={e => { e.stopPropagation(); onPrev(); }}>
           <span style={{width:20,height:20,display:'block'}}>{Icon.chevLeft()}</span>
@@ -504,7 +1018,8 @@ function PhotoGrid({ photos, likedIds, onPhotoClick, onLike }) {
 }
 
 /* ── Gallery View ── */
-function GalleryView({ gallery, likedIds, onLike, onBack, showToast, heroHeight, navStyle }) {
+function GalleryView({ gallery, likedIds, onLike, onBack, showToast, heroHeight, navStyle,
+                       isAdmin, onLoginClick, onLogout, onEditGallery }) {
   const [activeSet, setActiveSet] = useState('all');
   const [lightbox, setLightbox] = useState(null);
   const [showFavs, setShowFavs] = useState(false);
@@ -537,6 +1052,9 @@ function GalleryView({ gallery, likedIds, onLike, onBack, showToast, heroHeight,
         scrolled={scrolled || alwaysSolid}
         favorites={showFavs}
         onToggleFavs={() => setShowFavs(f => !f)}
+        isAdmin={isAdmin}
+        onLoginClick={onLoginClick}
+        onLogout={onLogout}
       />
 
       {/* Hero */}
@@ -565,12 +1083,19 @@ function GalleryView({ gallery, likedIds, onLike, onBack, showToast, heroHeight,
         </div>
       )}
 
-      {/* Back */}
-      <div style={{padding:'20px 24px 4px'}}>
+      {/* Back / Edit */}
+      <div style={{padding:'20px 24px 4px',display:'flex',justifyContent:'space-between',alignItems:'center'}}>
         <button className="back-btn" onClick={onBack}>
           <span style={{width:14,height:14,display:'block'}}>{Icon.chevLeft()}</span>
           All Galleries
         </button>
+        {isAdmin && onEditGallery && (
+          <button className="btn-secondary" onClick={() => onEditGallery(gallery)}
+            style={{display:'flex',alignItems:'center',gap:6,padding:'8px 14px'}}>
+            <span style={{width:14,height:14,display:'block'}}>{Icon.edit()}</span>
+            Edit Gallery
+          </button>
+        )}
       </div>
 
       {/* Favorites empty state */}
@@ -593,7 +1118,7 @@ function GalleryView({ gallery, likedIds, onLike, onBack, showToast, heroHeight,
         <p>© {new Date().getFullYear()} {PHOTOGRAPHER} &nbsp;·&nbsp; All rights reserved</p>
       </div>
 
-      {lightbox !== null && (
+      {lightbox !== null && photos[lightbox] && (
         <Lightbox
           photos={photos}
           index={lightbox}
@@ -601,6 +1126,7 @@ function GalleryView({ gallery, likedIds, onLike, onBack, showToast, heroHeight,
           onClose={closeLightbox}
           onPrev={prevPhoto}
           onNext={nextPhoto}
+          isAdmin={isAdmin}
           onLike={(id) => {
             onLike(id);
             showToast(likedIds.has(id) ? 'Removed from favorites' : 'Added to favorites');
@@ -612,7 +1138,7 @@ function GalleryView({ gallery, likedIds, onLike, onBack, showToast, heroHeight,
 }
 
 /* ── Home View ── */
-function HomeView({ onSelectGallery }) {
+function HomeView({ galleries, onSelectGallery, isAdmin, onLoginClick, onLogout, onEditGallery, onNewGallery }) {
   const [scrolled, setScrolled] = useState(false);
   useEffect(() => {
     const fn = () => setScrolled(window.scrollY > 10);
@@ -622,22 +1148,35 @@ function HomeView({ onSelectGallery }) {
 
   return (
     <div>
-      <Nav view="home" onHome={() => {}} transparent={false} scrolled={true} />
+      <Nav view="home" onHome={() => {}} transparent={false} scrolled={true}
+        isAdmin={isAdmin} onLoginClick={onLoginClick} onLogout={onLogout} />
       <div className="home-header">
         <h1>{PHOTOGRAPHER}</h1>
         <p>Photography &nbsp;·&nbsp; San Francisco, CA</p>
       </div>
       <div className="gallery-grid">
-        {GALLERIES.map(g => (
+        {galleries.map(g => (
           <div key={g.id} className="gallery-card" onClick={() => onSelectGallery(g)}>
-            <img src={g.coverThumb} alt={g.title} loading="lazy" />
+            <img src={g.coverThumb || g.cover} alt={g.title} loading="lazy" />
             <div className="gallery-card-overlay">
               <div className="gallery-card-title">{g.title}</div>
               <div className="gallery-card-meta">{g.subtitle}</div>
             </div>
-            <div className="gallery-card-count">{g.sets[0].photos.length} photos</div>
+            <div className="gallery-card-count">{(g.sets[0]?.photos.length) ?? 0} photos</div>
+            {isAdmin && (
+              <button className="gallery-card-edit"
+                onClick={e => { e.stopPropagation(); onEditGallery(g); }}>
+                Edit
+              </button>
+            )}
           </div>
         ))}
+        {isAdmin && (
+          <div className="new-gallery-card" onClick={onNewGallery}>
+            <span className="plus">+</span>
+            <span className="label">New Gallery</span>
+          </div>
+        )}
       </div>
       <div className="gallery-footer">
         <p>© {new Date().getFullYear()} {PHOTOGRAPHER} Photography</p>
@@ -649,7 +1188,7 @@ function HomeView({ onSelectGallery }) {
 /* ── App ── */
 function App() {
   const [view, setView] = useState('home');
-  const [activeGallery, setActiveGallery] = useState(null);
+  const [activeGalleryId, setActiveGalleryId] = useState(null);
   const [likedIds, setLikedIds] = useState(() => {
     try { return new Set(JSON.parse(localStorage.getItem('gallery_liked') || '[]')); }
     catch { return new Set(); }
@@ -657,6 +1196,25 @@ function App() {
   const [toast, setToast] = useState(null);
   const toastTimer = useRef(null);
   const [tweaks, setTweak] = useTweaks(TWEAK_DEFAULTS);
+  const [galleries, setGalleries] = useGalleries(GALLERIES);
+  const { isAdmin, login, logout } = useAdmin();
+  const [showLogin, setShowLogin] = useState(false);
+  const [editing, setEditing] = useState(null); // { gallery, isNew }
+
+  const activeGallery = activeGalleryId
+    ? galleries.find(g => g.id === activeGalleryId) || null
+    : null;
+
+  useEffect(() => {
+    if (view === 'gallery' && activeGalleryId && !activeGallery) {
+      setView('home');
+      setActiveGalleryId(null);
+    }
+  }, [view, activeGalleryId, activeGallery]);
+
+  useEffect(() => {
+    if (!isAdmin && editing) setEditing(null);
+  }, [isAdmin, editing]);
 
   useEffect(() => {
     document.documentElement.style.setProperty('--accent', tweaks.accentColor);
@@ -681,16 +1239,49 @@ function App() {
   }, []);
 
   const selectGallery = useCallback((g) => {
-    setActiveGallery(g);
+    setActiveGalleryId(g.id);
     setView('gallery');
     window.scrollTo(0, 0);
   }, []);
 
   const goHome = useCallback(() => {
     setView('home');
-    setActiveGallery(null);
+    setActiveGalleryId(null);
     window.scrollTo(0, 0);
   }, []);
+
+  const handleLogin = useCallback((pw) => {
+    if (login(pw)) { setShowLogin(false); showToast('Signed in as admin'); return true; }
+    return false;
+  }, [login, showToast]);
+
+  const handleLogout = useCallback(() => {
+    logout();
+    showToast('Signed out');
+  }, [logout, showToast]);
+
+  const startEditGallery = useCallback((g) => setEditing({ gallery: g, isNew: false }), []);
+  const startNewGallery = useCallback(() => setEditing({ gallery: null, isNew: true }), []);
+
+  const saveGallery = useCallback((draft) => {
+    setGalleries((() => {
+      const exists = galleries.some(g => g.id === draft.id);
+      return exists
+        ? galleries.map(g => g.id === draft.id ? draft : g)
+        : [...galleries, draft];
+    })());
+    setEditing(null);
+    showToast(editing?.isNew ? 'Gallery created' : 'Gallery saved');
+  }, [galleries, setGalleries, editing, showToast]);
+
+  const deleteGallery = useCallback(() => {
+    if (!editing?.gallery) return;
+    const id = editing.gallery.id;
+    setGalleries(galleries.filter(g => g.id !== id));
+    if (activeGalleryId === id) goHome();
+    setEditing(null);
+    showToast('Gallery deleted');
+  }, [editing, galleries, setGalleries, activeGalleryId, goHome, showToast]);
 
   return (
     <>
@@ -701,7 +1292,17 @@ function App() {
         @media (max-width: 560px) { .photo-grid { columns: 1; } }
       `}</style>
 
-      {view === 'home' && <HomeView onSelectGallery={selectGallery} />}
+      {view === 'home' && (
+        <HomeView
+          galleries={galleries}
+          onSelectGallery={selectGallery}
+          isAdmin={isAdmin}
+          onLoginClick={() => setShowLogin(true)}
+          onLogout={handleLogout}
+          onEditGallery={startEditGallery}
+          onNewGallery={startNewGallery}
+        />
+      )}
       {view === 'gallery' && activeGallery && (
         <GalleryView
           gallery={activeGallery}
@@ -711,9 +1312,29 @@ function App() {
           showToast={showToast}
           heroHeight={tweaks.heroHeight}
           navStyle={tweaks.navStyle}
+          isAdmin={isAdmin}
+          onLoginClick={() => setShowLogin(true)}
+          onLogout={handleLogout}
+          onEditGallery={startEditGallery}
         />
       )}
       {toast && <Toast msg={toast} />}
+
+      {showLogin && (
+        <AdminLoginModal
+          onClose={() => setShowLogin(false)}
+          onSubmit={handleLogin}
+        />
+      )}
+      {editing && (
+        <GalleryEditor
+          gallery={editing.gallery}
+          isNew={editing.isNew}
+          onClose={() => setEditing(null)}
+          onSave={saveGallery}
+          onDelete={editing.isNew ? null : deleteGallery}
+        />
+      )}
 
       <TweaksPanel>
         <TweakSection label="Layout">
