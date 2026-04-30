@@ -471,6 +471,18 @@ function uid(prefix) {
   return `${prefix}-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 7)}`;
 }
 
+function loadImageDims(url) {
+  return new Promise((resolve) => {
+    const img = new Image();
+    let done = false;
+    const finish = (dims) => { if (done) return; done = true; resolve(dims); };
+    img.onload = () => finish({ w: img.naturalWidth || null, h: img.naturalHeight || null });
+    img.onerror = () => finish({ w: null, h: null });
+    setTimeout(() => finish({ w: null, h: null }), 15000);
+    img.src = url;
+  });
+}
+
 function useAdmin() {
   const [isAdmin, setIsAdmin] = useState(() => {
     try { return sessionStorage.getItem('admin_session') === '1'; } catch { return false; }
@@ -728,33 +740,28 @@ function GalleryEditor({ gallery, isNew, onClose, onSave, onDelete }) {
   const [error, setError] = useState('');
 
   const update = (patch) => setDraft(d => ({ ...d, ...patch }));
-  const updateSet = (idx, patch) => setDraft(d => ({
-    ...d,
-    sets: d.sets.map((s, i) => i === idx ? { ...s, ...patch } : s),
-  }));
-  const addSet = () => setDraft(d => ({
-    ...d,
-    sets: [...d.sets, { id: uid('set'), label: 'New Set', photos: [] }],
-  }));
-  const removeSet = (idx) => setDraft(d => ({
-    ...d, sets: d.sets.filter((_, i) => i !== idx),
-  }));
-  const addPhotoToSet = (idx, url, thumbUrl) => {
+
+  // Photos are always added to the main "All Photos" set (sets[0]).
+  // Any other sub-sets (e.g. "Ceremony", "Reception") on existing galleries
+  // are preserved untouched.
+  const mainPhotos = draft.sets[0]?.photos || [];
+
+  const addPhoto = async (url, thumbUrl) => {
     if (!url) return;
-    const photo = {
-      id: uid('p'),
-      src: url,
-      thumb: thumbUrl || url,
-      w: 1200, h: 900,
-    };
-    setDraft(d => ({
-      ...d,
-      sets: d.sets.map((s, i) => i === idx ? { ...s, photos: [...s.photos, photo] } : s),
-    }));
+    const probeUrl = thumbUrl || url;
+    const { w, h } = await loadImageDims(probeUrl);
+    const photo = { id: uid('p'), src: url, thumb: thumbUrl || url, w, h };
+    setDraft(d => {
+      const sets = d.sets.length
+        ? d.sets.map((s, i) => i === 0 ? { ...s, photos: [...s.photos, photo] } : s)
+        : [{ id: 'all', label: 'All Photos', photos: [photo] }];
+      return { ...d, sets };
+    });
   };
-  const removePhotoFromSet = (idx, photoId) => setDraft(d => ({
+
+  const removePhoto = (photoId) => setDraft(d => ({
     ...d,
-    sets: d.sets.map((s, i) => i === idx ? { ...s, photos: s.photos.filter(p => p.id !== photoId) } : s),
+    sets: d.sets.map((s, i) => i === 0 ? { ...s, photos: s.photos.filter(p => p.id !== photoId) } : s),
   }));
 
   const handleSave = () => {
@@ -803,22 +810,19 @@ function GalleryEditor({ gallery, isNew, onClose, onSave, onDelete }) {
             <input type="url" value={draft.coverThumb} onChange={e => update({coverThumb: e.target.value})} placeholder="Defaults to cover URL" />
           </div>
 
-          <div style={{marginTop:24,marginBottom:10,display:'flex',justifyContent:'space-between',alignItems:'center'}}>
-            <label style={{fontSize:11,letterSpacing:'0.1em',textTransform:'uppercase',color:'var(--fg2)'}}>Photo Sets</label>
-            <button type="button" className="btn-secondary" onClick={addSet}>+ Add Set</button>
+          <div style={{marginTop:24,marginBottom:10}}>
+            <label style={{fontSize:11,letterSpacing:'0.1em',textTransform:'uppercase',color:'var(--fg2)'}}>
+              Photos <span style={{color:'var(--fg3)',marginLeft:6,letterSpacing:'0.04em',textTransform:'none'}}>
+                ({mainPhotos.length})
+              </span>
+            </label>
           </div>
 
-          {draft.sets.map((s, idx) => (
-            <SetEditor
-              key={s.id}
-              set={s}
-              canRemove={draft.sets.length > 1}
-              onLabelChange={(v) => updateSet(idx, { label: v })}
-              onRemove={() => removeSet(idx)}
-              onAddPhoto={(url, thumb) => addPhotoToSet(idx, url, thumb)}
-              onRemovePhoto={(pid) => removePhotoFromSet(idx, pid)}
-            />
-          ))}
+          <PhotoListEditor
+            photos={mainPhotos}
+            onAddPhoto={addPhoto}
+            onRemovePhoto={removePhoto}
+          />
 
           {error && <div className="form-error">{error}</div>}
 
@@ -837,27 +841,32 @@ function GalleryEditor({ gallery, isNew, onClose, onSave, onDelete }) {
   );
 }
 
-function SetEditor({ set, canRemove, onLabelChange, onRemove, onAddPhoto, onRemovePhoto }) {
+function PhotoListEditor({ photos, onAddPhoto, onRemovePhoto }) {
   const [url, setUrl] = useState('');
   const [thumb, setThumb] = useState('');
-  const submit = (e) => {
+  const [busy, setBusy] = useState(false);
+  const [err, setErr] = useState('');
+
+  const submit = async (e) => {
     if (e) e.preventDefault();
-    if (!url.trim()) return;
-    onAddPhoto(url.trim(), thumb.trim());
-    setUrl(''); setThumb('');
+    const u = url.trim();
+    if (!u) return;
+    setBusy(true); setErr('');
+    try {
+      await onAddPhoto(u, thumb.trim());
+      setUrl(''); setThumb('');
+    } catch (ex) {
+      setErr('Failed to add photo');
+    } finally {
+      setBusy(false);
+    }
   };
+
   return (
     <div className="set-block">
-      <div className="set-header">
-        <input type="text" value={set.label} onChange={e => onLabelChange(e.target.value)} placeholder="Set label" />
-        <span style={{fontSize:11,color:'var(--fg2)',letterSpacing:'0.08em'}}>{set.photos.length} photos</span>
-        {canRemove && (
-          <button type="button" className="btn-secondary" style={{padding:'6px 12px'}} onClick={onRemove}>Remove</button>
-        )}
-      </div>
-      {set.photos.length > 0 && (
+      {photos.length > 0 && (
         <div className="photo-edit-list">
-          {set.photos.map(p => (
+          {photos.map(p => (
             <div key={p.id} className="photo-edit-item">
               <img src={p.thumb} alt="" loading="lazy" />
               <button type="button" className="photo-edit-remove" title="Remove photo"
@@ -867,10 +876,15 @@ function SetEditor({ set, canRemove, onLabelChange, onRemove, onAddPhoto, onRemo
         </div>
       )}
       <form className="photo-add-row" onSubmit={submit}>
-        <input type="url" placeholder="Photo URL (https://...)" value={url} onChange={e => setUrl(e.target.value)} />
-        <input type="url" placeholder="Thumbnail URL (optional)" value={thumb} onChange={e => setThumb(e.target.value)} style={{maxWidth:200}} />
-        <button type="submit" className="btn-secondary" style={{whiteSpace:'nowrap'}}>+ Add</button>
+        <input type="url" placeholder="Photo URL (https://...)" value={url}
+          onChange={e => setUrl(e.target.value)} disabled={busy} />
+        <input type="url" placeholder="Thumbnail URL (optional)" value={thumb}
+          onChange={e => setThumb(e.target.value)} style={{maxWidth:200}} disabled={busy} />
+        <button type="submit" className="btn-secondary" style={{whiteSpace:'nowrap'}} disabled={busy}>
+          {busy ? 'Adding…' : '+ Add'}
+        </button>
       </form>
+      {err && <div className="form-error">{err}</div>}
     </div>
   );
 }
@@ -1001,9 +1015,12 @@ function PhotoGrid({ photos, likedIds, onPhotoClick, onLike }) {
     <div className="photo-grid">
       {photos.map((photo, i) => {
         const isLiked = likedIds.has(photo.id);
+        const imgStyle = photo.w && photo.h
+          ? { aspectRatio: `${photo.w} / ${photo.h}` }
+          : undefined;
         return (
           <div key={photo.id} className="photo-item" onClick={() => onPhotoClick(i)}>
-            <img src={photo.thumb} alt="" loading="lazy" style={{ aspectRatio: photo.w + '/' + photo.h }} />
+            <img src={photo.thumb} alt="" loading="lazy" style={imgStyle} />
             <div className="photo-item-overlay">
               <button className={`heart-btn ${isLiked ? 'liked' : ''}`}
                 onClick={e => { e.stopPropagation(); onLike(photo.id); }}>
