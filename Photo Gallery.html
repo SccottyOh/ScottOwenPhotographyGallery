@@ -71,6 +71,12 @@
     }
     .nav-icon:hover { background: rgba(0,0,0,0.07); }
     .nav-icon svg { width: 18px; height: 18px; stroke: currentColor; fill: none; stroke-width: 1.5; }
+    .admin-badge {
+      font-size: 10px; letter-spacing: 0.12em; text-transform: uppercase;
+      color: var(--accent); background: rgba(139,115,85,0.12);
+      padding: 3px 8px; border-radius: 10px; font-weight: 500;
+    }
+    .nav.dark:not(.solid) .admin-badge { color: rgba(255,255,255,0.8); background: rgba(255,255,255,0.15); }
 
     /* Home */
     .home-header {
@@ -115,6 +121,20 @@
       font-size: 11px; letter-spacing: 0.1em; padding: 4px 10px; border-radius: 20px;
       backdrop-filter: blur(4px);
     }
+    .gallery-card-edit {
+      position: absolute; top: 16px; left: 16px;
+      opacity: 0; transition: opacity 0.2s;
+    }
+    .gallery-card:hover .gallery-card-edit { opacity: 1; }
+    .gallery-card-edit button {
+      background: rgba(0,0,0,0.55); backdrop-filter: blur(6px);
+      color: #fff; border: none; cursor: pointer;
+      font-family: var(--sans); font-size: 10px; letter-spacing: 0.12em; text-transform: uppercase;
+      padding: 5px 12px; border-radius: 4px; display: flex; align-items: center; gap: 5px;
+      transition: background 0.15s;
+    }
+    .gallery-card-edit button:hover { background: rgba(0,0,0,0.75); }
+    .gallery-card-edit button svg { width: 12px; height: 12px; stroke: currentColor; fill: none; stroke-width: 1.5; }
 
     /* Gallery hero */
     .gallery-hero {
@@ -239,6 +259,30 @@
     .lb-heart svg { width: 16px; height: 16px; stroke: currentColor; fill: none; stroke-width: 1.8; transition: fill 0.15s; }
     .lb-heart.liked svg { fill: #e05555; }
 
+    /* EXIF panel in lightbox */
+    .lb-exif-panel {
+      position: fixed; bottom: 80px; left: 50%; transform: translateX(-50%);
+      background: rgba(12,10,8,0.92); backdrop-filter: blur(16px);
+      border: 1px solid rgba(255,255,255,0.1); border-radius: 10px;
+      padding: 20px 24px; min-width: 340px; max-width: 90vw;
+      animation: lbIn 0.2s ease;
+      z-index: 10;
+    }
+    .lb-exif-title {
+      font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase;
+      color: rgba(255,255,255,0.35); margin-bottom: 14px;
+    }
+    .exif-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px 28px; }
+    .exif-row-label {
+      font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase;
+      color: rgba(255,255,255,0.35); margin-bottom: 2px;
+    }
+    .exif-row-value { font-size: 13px; color: rgba(255,255,255,0.85); }
+    .exif-empty {
+      font-size: 12px; color: rgba(255,255,255,0.35); letter-spacing: 0.06em;
+      text-align: center; padding: 6px 0;
+    }
+
     /* Footer */
     .gallery-footer {
       text-align: center; padding: 48px 32px;
@@ -266,6 +310,174 @@
     }
     .back-btn:hover { color: var(--fg); }
     .back-btn svg { width: 14px; height: 14px; stroke: currentColor; fill: none; stroke-width: 1.5; }
+
+    /* Loading */
+    .loading-screen {
+      min-height: 100vh; display: flex; align-items: center; justify-content: center;
+      flex-direction: column; gap: 20px;
+    }
+    .loading-spinner {
+      width: 32px; height: 32px; border: 2px solid var(--bg2);
+      border-top-color: var(--accent); border-radius: 50%;
+      animation: spin 0.7s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .loading-screen p { font-size: 12px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--fg3); }
+
+    /* ── Admin styles ── */
+    .modal-overlay {
+      position: fixed; inset: 0; z-index: 500;
+      background: rgba(0,0,0,0.55); backdrop-filter: blur(4px);
+      display: flex; align-items: center; justify-content: center;
+      padding: 24px; animation: lbIn 0.18s ease;
+    }
+    .modal {
+      background: var(--bg); border-radius: 10px;
+      width: 100%; max-width: 480px;
+      box-shadow: 0 24px 80px rgba(0,0,0,0.3);
+      max-height: 90vh; overflow-y: auto;
+      animation: modalSlideIn 0.22s cubic-bezier(0.34,1.2,0.64,1);
+    }
+    .modal-wide { max-width: 720px; }
+    @keyframes modalSlideIn { from { opacity: 0; transform: scale(0.96) translateY(10px); } to { opacity: 1; transform: scale(1) translateY(0); } }
+    .modal-header {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 28px 32px 0; margin-bottom: 24px;
+    }
+    .modal-header h2 {
+      font-family: var(--serif); font-size: 26px; font-weight: 300;
+      letter-spacing: 0.02em;
+    }
+    .modal-body { padding: 0 32px 32px; }
+
+    .form-field { margin-bottom: 18px; }
+    .form-field label {
+      display: block; font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase;
+      color: var(--fg2); margin-bottom: 7px; font-weight: 400;
+    }
+    .form-field input, .form-field textarea, .form-field select {
+      width: 100%; padding: 9px 12px;
+      border: 1px solid rgba(0,0,0,0.15); border-radius: 5px;
+      background: var(--white); color: var(--fg);
+      font-family: var(--sans); font-size: 13px; font-weight: 300;
+      outline: none; transition: border-color 0.2s;
+    }
+    .form-field input:focus, .form-field textarea:focus { border-color: var(--accent); }
+    .form-field textarea { resize: vertical; min-height: 70px; }
+    .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+    .form-error { font-size: 12px; color: #c0392b; margin-top: 6px; }
+
+    .btn {
+      padding: 9px 22px; border-radius: 5px; border: none; cursor: pointer;
+      font-family: var(--sans); font-size: 11px; letter-spacing: 0.1em;
+      text-transform: uppercase; font-weight: 400;
+      transition: background 0.15s, color 0.15s; display: inline-flex; align-items: center; gap: 7px;
+    }
+    .btn svg { width: 13px; height: 13px; stroke: currentColor; fill: none; stroke-width: 1.5; }
+    .btn-primary { background: var(--fg); color: var(--white); }
+    .btn-primary:hover { background: #333; }
+    .btn-accent { background: var(--accent); color: var(--white); }
+    .btn-accent:hover { background: #7a6449; }
+    .btn-secondary { background: transparent; color: var(--fg2); border: 1px solid rgba(0,0,0,0.15); }
+    .btn-secondary:hover { background: var(--bg2); color: var(--fg); }
+    .btn-danger { background: transparent; color: #c0392b; border: 1px solid rgba(192,57,43,0.3); }
+    .btn-danger:hover { background: rgba(192,57,43,0.08); }
+    .btn-ghost { background: none; border: none; color: var(--fg2); padding: 6px 10px; }
+    .btn-ghost:hover { color: var(--fg); background: var(--bg2); }
+    .btn-sm { padding: 6px 14px; font-size: 10px; }
+    .btn-full { width: 100%; justify-content: center; }
+
+    .modal-actions {
+      display: flex; gap: 10px; justify-content: flex-end;
+      padding-top: 24px; border-top: 1px solid rgba(0,0,0,0.07); margin-top: 24px;
+    }
+    .modal-actions-split { justify-content: space-between; }
+
+    /* Admin panel (slide-in drawer) */
+    .admin-drawer {
+      position: fixed; inset: 0; z-index: 500;
+      display: flex; animation: lbIn 0.18s ease;
+    }
+    .admin-drawer-overlay { flex: 1; background: rgba(0,0,0,0.45); backdrop-filter: blur(2px); }
+    .admin-drawer-panel {
+      width: 480px; max-width: 100vw; background: var(--bg);
+      overflow-y: auto; display: flex; flex-direction: column;
+      box-shadow: -16px 0 60px rgba(0,0,0,0.2);
+      animation: drawerIn 0.25s cubic-bezier(0.34,1.1,0.64,1);
+    }
+    @keyframes drawerIn { from { transform: translateX(40px); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+    .admin-drawer-header {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 28px 28px 20px; border-bottom: 1px solid rgba(0,0,0,0.07); flex-shrink: 0;
+    }
+    .admin-drawer-header h2 { font-family: var(--serif); font-size: 24px; font-weight: 300; }
+    .admin-drawer-body { padding: 20px 28px; flex: 1; }
+
+    .admin-gallery-item {
+      display: flex; align-items: center; gap: 14px;
+      padding: 12px 0; border-bottom: 1px solid rgba(0,0,0,0.06);
+    }
+    .admin-gallery-item:last-child { border-bottom: none; }
+    .admin-gallery-thumb {
+      width: 64px; height: 48px; object-fit: cover; border-radius: 4px;
+      background: var(--bg2); flex-shrink: 0;
+    }
+    .admin-gallery-info { flex: 1; min-width: 0; }
+    .admin-gallery-info h4 { font-family: var(--serif); font-size: 16px; font-weight: 400; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .admin-gallery-info p { font-size: 11px; color: var(--fg3); letter-spacing: 0.06em; margin-top: 2px; }
+
+    /* Set manager inside gallery editor */
+    .set-list { margin-top: 8px; }
+    .set-item {
+      border: 1px solid rgba(0,0,0,0.1); border-radius: 6px; margin-bottom: 10px; overflow: hidden;
+    }
+    .set-item-header {
+      display: flex; align-items: center; gap: 10px; padding: 12px 14px;
+      background: var(--bg2); cursor: pointer; user-select: none;
+    }
+    .set-item-header span { font-size: 12px; letter-spacing: 0.08em; flex: 1; }
+    .set-item-header small { font-size: 11px; color: var(--fg3); }
+    .set-item-body { padding: 14px; }
+
+    /* Photo thumbnails in set manager */
+    .photo-thumb-grid {
+      display: grid; grid-template-columns: repeat(auto-fill, minmax(80px, 1fr)); gap: 6px; margin-bottom: 12px;
+    }
+    .photo-thumb-item {
+      position: relative; aspect-ratio: 4/3; border-radius: 4px; overflow: hidden; background: var(--bg2);
+    }
+    .photo-thumb-item img { width: 100%; height: 100%; object-fit: cover; display: block; }
+    .photo-thumb-del {
+      position: absolute; inset: 0; background: rgba(0,0,0,0); display: flex;
+      align-items: center; justify-content: center; transition: background 0.15s;
+    }
+    .photo-thumb-del:hover { background: rgba(192,57,43,0.65); }
+    .photo-thumb-del button {
+      opacity: 0; background: none; border: none; cursor: pointer; color: #fff;
+      transition: opacity 0.15s;
+    }
+    .photo-thumb-del:hover button { opacity: 1; }
+    .photo-thumb-del button svg { width: 18px; height: 18px; stroke: currentColor; fill: none; stroke-width: 1.5; }
+
+    /* Add photo inline form */
+    .add-photo-form {
+      border: 1px dashed rgba(0,0,0,0.18); border-radius: 6px;
+      padding: 16px; margin-top: 10px; background: var(--white);
+    }
+    .add-photo-form h4 { font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--fg2); margin-bottom: 14px; }
+    .exif-toggle {
+      font-size: 11px; letter-spacing: 0.08em; color: var(--accent); cursor: pointer;
+      background: none; border: none; padding: 4px 0; margin-bottom: 10px; display: inline-block;
+    }
+    .exif-section { border-top: 1px solid rgba(0,0,0,0.07); padding-top: 12px; margin-top: 4px; }
+
+    /* Loading skeleton */
+    .skeleton {
+      background: linear-gradient(90deg, var(--bg2) 25%, var(--bg) 50%, var(--bg2) 75%);
+      background-size: 200% 100%;
+      animation: shimmer 1.4s infinite; border-radius: 4px;
+    }
+    @keyframes shimmer { from { background-position: 200% 0; } to { background-position: -200% 0; } }
   </style>
 </head>
 <body>
@@ -283,104 +495,15 @@ const TWEAK_DEFAULTS = /*EDITMODE-BEGIN*/{
 
 const PHOTOGRAPHER = "Chris Ruth";
 
-function makePhotos(seeds, setLabel) {
-  return seeds.map((seed, i) => ({
-    id: `${setLabel}-${i}`,
-    src: `https://picsum.photos/seed/${seed}/1200/900`,
-    thumb: `https://picsum.photos/seed/${seed}/600/450`,
-    w: seed % 3 === 0 ? 900 : 1200,
-    h: seed % 3 === 0 ? 1200 : (seed % 2 === 0 ? 800 : 900),
-  }));
+/* ── API helpers ── */
+async function apiFetch(url, opts = {}, token = null) {
+  const headers = { 'Content-Type': 'application/json', ...(opts.headers || {}) };
+  if (token) headers['Authorization'] = `Bearer ${token}`;
+  const res = await fetch(url, { ...opts, headers });
+  const data = await res.json();
+  if (!res.ok) throw new Error(data.error || 'Request failed');
+  return data;
 }
-
-const GALLERIES = [
-  {
-    id: "meghan-desmond",
-    title: "Meghan & Desmond",
-    subtitle: "Wedding · September 2024 · Napa Valley, CA",
-    cover: "https://picsum.photos/seed/wed01/1600/900",
-    coverThumb: "https://picsum.photos/seed/wed01/800/600",
-    date: "September 14, 2024",
-    location: "Napa Valley, CA",
-    sets: [
-      { id: "all", label: "All Photos", photos: makePhotos([101,102,103,104,105,106,107,108,109,110,111,112,113,114,115,116,117,118,119,120,121,122,123,124], "md") },
-      { id: "ceremony", label: "Ceremony", photos: makePhotos([101,103,105,107,109,111,113,115], "mdc") },
-      { id: "reception", label: "Reception", photos: makePhotos([102,104,106,108,110,112,114,116,118,120], "mdr") },
-      { id: "portraits", label: "Portraits", photos: makePhotos([117,119,121,122,123,124], "mdp") },
-    ],
-  },
-  {
-    id: "sarah-james",
-    title: "Sarah & James",
-    subtitle: "Engagement · July 2024 · Marin Headlands, CA",
-    cover: "https://picsum.photos/seed/eng02/1600/900",
-    coverThumb: "https://picsum.photos/seed/eng02/800/600",
-    date: "July 6, 2024",
-    location: "Marin Headlands, CA",
-    sets: [
-      { id: "all", label: "All Photos", photos: makePhotos([201,202,203,204,205,206,207,208,209,210,211,212,213,214,215,216], "sj") },
-      { id: "golden-hour", label: "Golden Hour", photos: makePhotos([201,203,205,207,209,211], "sjg") },
-      { id: "beach", label: "Beach", photos: makePhotos([202,204,206,208,210,212,214,216], "sjb") },
-    ],
-  },
-  {
-    id: "rodriguez-family",
-    title: "Rodriguez Family",
-    subtitle: "Family · October 2024 · Muir Woods, CA",
-    cover: "https://picsum.photos/seed/fam03/1600/900",
-    coverThumb: "https://picsum.photos/seed/fam03/800/600",
-    date: "October 12, 2024",
-    location: "Muir Woods, CA",
-    sets: [
-      { id: "all", label: "All Photos", photos: makePhotos([301,302,303,304,305,306,307,308,309,310,311,312,313,314], "rf") },
-      { id: "kids", label: "Kids", photos: makePhotos([301,303,305,307,309,311], "rfk") },
-      { id: "full-family", label: "Full Family", photos: makePhotos([302,304,306,308,310,312,314], "rff") },
-    ],
-  },
-  {
-    id: "ava-portraits",
-    title: "Ava — Senior Portraits",
-    subtitle: "Portrait · August 2024 · San Francisco, CA",
-    cover: "https://picsum.photos/seed/por04/1600/900",
-    coverThumb: "https://picsum.photos/seed/por04/800/600",
-    date: "August 20, 2024",
-    location: "San Francisco, CA",
-    sets: [
-      { id: "all", label: "All Photos", photos: makePhotos([401,402,403,404,405,406,407,408,409,410,411,412], "av") },
-      { id: "urban", label: "Urban", photos: makePhotos([401,403,405,407,409,411], "avu") },
-      { id: "golden-gate", label: "Golden Gate", photos: makePhotos([402,404,406,408,410,412], "avg") },
-    ],
-  },
-  {
-    id: "chen-wedding",
-    title: "Lily & Marcus",
-    subtitle: "Wedding · May 2024 · Carmel-by-the-Sea, CA",
-    cover: "https://picsum.photos/seed/wed05/1600/900",
-    coverThumb: "https://picsum.photos/seed/wed05/800/600",
-    date: "May 25, 2024",
-    location: "Carmel-by-the-Sea, CA",
-    sets: [
-      { id: "all", label: "All Photos", photos: makePhotos([501,502,503,504,505,506,507,508,509,510,511,512,513,514,515,516,517,518,519,520], "lm") },
-      { id: "ceremony", label: "Ceremony", photos: makePhotos([501,503,505,507,509,511,513,515], "lmc") },
-      { id: "reception", label: "Reception", photos: makePhotos([502,504,506,508,510,512,514,516,518,520], "lmr") },
-      { id: "portraits", label: "Portraits", photos: makePhotos([517,519], "lmp") },
-    ],
-  },
-  {
-    id: "newborn-patel",
-    title: "Baby Patel",
-    subtitle: "Newborn · November 2024 · Studio, San Francisco",
-    cover: "https://picsum.photos/seed/new06/1600/900",
-    coverThumb: "https://picsum.photos/seed/new06/800/600",
-    date: "November 3, 2024",
-    location: "San Francisco Studio",
-    sets: [
-      { id: "all", label: "All Photos", photos: makePhotos([601,602,603,604,605,606,607,608,609,610], "bp") },
-      { id: "baby", label: "Baby", photos: makePhotos([601,603,605,607,609], "bpb") },
-      { id: "family", label: "With Family", photos: makePhotos([602,604,606,608,610], "bpf") },
-    ],
-  },
-];
 
 /* ── Icons ── */
 const Icon = {
@@ -396,6 +519,13 @@ const Icon = {
   chevLeft: () => <svg viewBox="0 0 24 24" style={{width:'100%',height:'100%'}}><polyline points="15 18 9 12 15 6" strokeWidth="1.5"/></svg>,
   chevRight: () => <svg viewBox="0 0 24 24" style={{width:'100%',height:'100%'}}><polyline points="9 18 15 12 9 6" strokeWidth="1.5"/></svg>,
   chevDown: () => <svg viewBox="0 0 24 24" style={{width:'100%',height:'100%'}}><polyline points="6 9 12 15 18 9" strokeWidth="1.5"/></svg>,
+  key: () => <svg viewBox="0 0 24 24" style={{width:'100%',height:'100%'}}><circle cx="7.5" cy="15.5" r="5.5" strokeWidth="1.5"/><path d="m21 2-9.6 9.6" strokeWidth="1.5"/><path d="m15.5 7.5 3 3" strokeWidth="1.5"/><path d="m18 5 2 2" strokeWidth="1.5"/></svg>,
+  edit: () => <svg viewBox="0 0 24 24" style={{width:'100%',height:'100%'}}><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" strokeWidth="1.5"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" strokeWidth="1.5"/></svg>,
+  plus: () => <svg viewBox="0 0 24 24" style={{width:'100%',height:'100%'}}><line x1="12" y1="5" x2="12" y2="19" strokeWidth="1.5"/><line x1="5" y1="12" x2="19" y2="12" strokeWidth="1.5"/></svg>,
+  trash: () => <svg viewBox="0 0 24 24" style={{width:'100%',height:'100%'}}><polyline points="3 6 5 6 21 6" strokeWidth="1.5"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2" strokeWidth="1.5"/></svg>,
+  logout: () => <svg viewBox="0 0 24 24" style={{width:'100%',height:'100%'}}><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" strokeWidth="1.5"/><polyline points="16 17 21 12 16 7" strokeWidth="1.5"/><line x1="21" y1="12" x2="9" y2="12" strokeWidth="1.5"/></svg>,
+  info: () => <svg viewBox="0 0 24 24" style={{width:'100%',height:'100%'}}><circle cx="12" cy="12" r="10" strokeWidth="1.5"/><line x1="12" y1="8" x2="12" y2="12" strokeWidth="1.5"/><line x1="12" y1="16" x2="12.01" y2="16" strokeWidth="2.5"/></svg>,
+  chevUp: () => <svg viewBox="0 0 24 24" style={{width:'100%',height:'100%'}}><polyline points="18 15 12 9 6 15" strokeWidth="1.5"/></svg>,
 };
 
 /* ── Toast ── */
@@ -404,7 +534,7 @@ function Toast({ msg }) {
 }
 
 /* ── Nav ── */
-function Nav({ view, galleryTitle, onHome, transparent, dark, scrolled, favorites, onToggleFavs }) {
+function Nav({ view, galleryTitle, onHome, transparent, dark, scrolled, favorites, onToggleFavs, isAdmin, onAdminClick, onLogout }) {
   const solidClass = scrolled || !transparent ? 'solid' : '';
   const darkClass = dark && !scrolled ? 'dark' : '';
   return (
@@ -432,14 +562,502 @@ function Nav({ view, galleryTitle, onHome, transparent, dark, scrolled, favorite
             </button>
           </>
         )}
+        {isAdmin && <span className="admin-badge">Admin</span>}
+        {isAdmin
+          ? <button className="nav-icon" title="Sign out" onClick={onLogout}>
+              <span style={{width:18,height:18,display:'block'}}>{Icon.logout()}</span>
+            </button>
+          : <button className="nav-icon" title="Admin login" onClick={onAdminClick}>
+              <span style={{width:18,height:18,display:'block'}}>{Icon.key()}</span>
+            </button>
+        }
       </div>
     </nav>
   );
 }
 
+/* ── Admin Login Modal ── */
+function AdminLoginModal({ onLogin, onClose }) {
+  const [username, setUsername] = useState('');
+  const [password, setPassword] = useState('');
+  const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setError(''); setLoading(true);
+    const ok = await onLogin(username, password);
+    if (!ok) { setError('Invalid credentials'); setLoading(false); }
+  };
+
+  return (
+    <div className="modal-overlay" onClick={onClose}>
+      <div className="modal" onClick={e => e.stopPropagation()}>
+        <div className="modal-header">
+          <h2>Admin Login</h2>
+          <button className="btn btn-ghost btn-sm" onClick={onClose} style={{padding:'6px'}}>
+            <span style={{width:18,height:18,display:'block'}}>{Icon.close()}</span>
+          </button>
+        </div>
+        <div className="modal-body">
+          <form onSubmit={handleSubmit}>
+            <div className="form-field">
+              <label>Username</label>
+              <input type="text" value={username} autoFocus autoComplete="username"
+                onChange={e => setUsername(e.target.value)} />
+            </div>
+            <div className="form-field">
+              <label>Password</label>
+              <input type="password" value={password} autoComplete="current-password"
+                onChange={e => setPassword(e.target.value)} />
+            </div>
+            {error && <p className="form-error" style={{marginBottom:14}}>{error}</p>}
+            <div className="modal-actions">
+              <button type="button" className="btn btn-secondary" onClick={onClose}>Cancel</button>
+              <button type="submit" className="btn btn-primary" disabled={loading}>
+                {loading ? 'Signing in…' : 'Sign In'}
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* ── Add Photo Form ── */
+function AddPhotoForm({ galleryId, setId, token, onAdded, onCancel }) {
+  const EXIF_BLANK = { camera:'', lens:'', aperture:'', shutter:'', iso:'', focalLength:'' };
+  const [src, setSrc] = useState('');
+  const [thumb, setThumb] = useState('');
+  const [width, setWidth] = useState('1200');
+  const [height, setHeight] = useState('900');
+  const [showExif, setShowExif] = useState(false);
+  const [exif, setExif] = useState(EXIF_BLANK);
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState('');
+
+  const setExifField = (k, v) => setExif(x => ({...x, [k]: v}));
+
+  const handleAdd = async () => {
+    if (!src.trim()) { setError('Photo URL is required'); return; }
+    setSaving(true); setError('');
+    try {
+      const hasExif = Object.values(exif).some(v => v.trim());
+      await apiFetch(
+        `/api/galleries/${galleryId}/sets/${setId}/photos`,
+        { method: 'POST', body: JSON.stringify({ src: src.trim(), thumb: thumb.trim() || src.trim(), width: parseInt(width)||1200, height: parseInt(height)||900, exif: hasExif ? exif : null }) },
+        token
+      );
+      onAdded();
+    } catch (e) { setError(e.message); setSaving(false); }
+  };
+
+  return (
+    <div className="add-photo-form">
+      <h4>Add Photo by URL</h4>
+      <div className="form-field" style={{marginBottom:10}}>
+        <label>Photo URL *</label>
+        <input type="url" placeholder="https://…" value={src} onChange={e => setSrc(e.target.value)} />
+      </div>
+      <div className="form-field" style={{marginBottom:10}}>
+        <label>Thumbnail URL <span style={{opacity:0.5}}>(optional, defaults to photo URL)</span></label>
+        <input type="url" placeholder="https://…" value={thumb} onChange={e => setThumb(e.target.value)} />
+      </div>
+      <div className="form-row" style={{marginBottom:10}}>
+        <div className="form-field" style={{marginBottom:0}}>
+          <label>Width (px)</label>
+          <input type="number" value={width} onChange={e => setWidth(e.target.value)} />
+        </div>
+        <div className="form-field" style={{marginBottom:0}}>
+          <label>Height (px)</label>
+          <input type="number" value={height} onChange={e => setHeight(e.target.value)} />
+        </div>
+      </div>
+      <button className="exif-toggle" onClick={() => setShowExif(s => !s)}>
+        {showExif ? '▴ Hide EXIF data' : '▾ Add EXIF data (optional)'}
+      </button>
+      {showExif && (
+        <div className="exif-section">
+          <div className="form-row">
+            <div className="form-field" style={{marginBottom:10}}>
+              <label>Camera</label>
+              <input type="text" placeholder="Sony A7 IV" value={exif.camera} onChange={e => setExifField('camera', e.target.value)} />
+            </div>
+            <div className="form-field" style={{marginBottom:10}}>
+              <label>Lens</label>
+              <input type="text" placeholder="85mm f/1.4" value={exif.lens} onChange={e => setExifField('lens', e.target.value)} />
+            </div>
+          </div>
+          <div className="form-row">
+            <div className="form-field" style={{marginBottom:10}}>
+              <label>Aperture</label>
+              <input type="text" placeholder="f/2.8" value={exif.aperture} onChange={e => setExifField('aperture', e.target.value)} />
+            </div>
+            <div className="form-field" style={{marginBottom:10}}>
+              <label>Shutter Speed</label>
+              <input type="text" placeholder="1/250s" value={exif.shutter} onChange={e => setExifField('shutter', e.target.value)} />
+            </div>
+          </div>
+          <div className="form-row">
+            <div className="form-field" style={{marginBottom:0}}>
+              <label>ISO</label>
+              <input type="text" placeholder="400" value={exif.iso} onChange={e => setExifField('iso', e.target.value)} />
+            </div>
+            <div className="form-field" style={{marginBottom:0}}>
+              <label>Focal Length</label>
+              <input type="text" placeholder="85mm" value={exif.focalLength} onChange={e => setExifField('focalLength', e.target.value)} />
+            </div>
+          </div>
+        </div>
+      )}
+      {error && <p className="form-error" style={{marginTop:8}}>{error}</p>}
+      <div style={{display:'flex', gap:8, marginTop:12}}>
+        <button className="btn btn-secondary btn-sm" onClick={onCancel}>Cancel</button>
+        <button className="btn btn-accent btn-sm" onClick={handleAdd} disabled={saving}>
+          {saving ? 'Adding…' : 'Add Photo'}
+        </button>
+      </div>
+    </div>
+  );
+}
+
+/* ── Gallery Editor Modal ── */
+function GalleryEditorModal({ gallery, token, onSaved, onDeleted, onClose }) {
+  const isNew = !gallery;
+  const blankForm = { id:'', title:'', subtitle:'', cover:'', coverThumb:'', date:'', location:'' };
+  const [form, setForm] = useState(gallery ? {
+    id: gallery.id, title: gallery.title, subtitle: gallery.subtitle,
+    cover: gallery.cover, coverThumb: gallery.coverThumb,
+    date: gallery.date, location: gallery.location,
+  } : blankForm);
+  const [sets, setSets] = useState(gallery ? gallery.sets : []);
+  const [expandedSet, setExpandedSet] = useState(null);
+  const [addingPhotoToSet, setAddingPhotoToSet] = useState(null);
+  const [addSetOpen, setAddSetOpen] = useState(false);
+  const [newSetLabel, setNewSetLabel] = useState('');
+  const [saving, setSaving] = useState(false);
+  const [deleting, setDeleting] = useState(false);
+  const [error, setError] = useState('');
+
+  const setField = (k, v) => setForm(f => ({...f, [k]: v}));
+
+  const slugify = (s) => s.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+
+  const handleSave = async () => {
+    if (!form.title.trim()) { setError('Title is required'); return; }
+    setSaving(true); setError('');
+    try {
+      const id = isNew ? (slugify(form.title) || `gallery-${Date.now()}`) : form.id;
+      if (isNew) {
+        await apiFetch('/api/galleries', {
+          method: 'POST',
+          body: JSON.stringify({ ...form, id, coverThumb: form.coverThumb || form.cover }),
+        }, token);
+      } else {
+        await apiFetch(`/api/galleries/${id}`, {
+          method: 'PUT',
+          body: JSON.stringify({ ...form, coverThumb: form.coverThumb || form.cover }),
+        }, token);
+      }
+      onSaved();
+    } catch (e) { setError(e.message); setSaving(false); }
+  };
+
+  const handleDelete = async () => {
+    if (!confirm(`Delete gallery "${gallery.title}"? This cannot be undone.`)) return;
+    setDeleting(true);
+    try {
+      await apiFetch(`/api/galleries/${gallery.id}`, { method: 'DELETE' }, token);
+      onDeleted();
+    } catch (e) { setError(e.message); setDeleting(false); }
+  };
+
+  const handleDeletePhoto = async (setId, photoId) => {
+    await apiFetch(`/api/galleries/${gallery.id}/sets/${setId}/photos/${photoId}`, { method: 'DELETE' }, token);
+    setSets(prev => prev.map(s => s.id === setId ? {...s, photos: s.photos.filter(p => p.id !== photoId)} : s));
+  };
+
+  const handleAddSet = async () => {
+    if (!newSetLabel.trim()) return;
+    const id = slugify(newSetLabel) || `set-${Date.now()}`;
+    await apiFetch(`/api/galleries/${gallery.id}/sets`, {
+      method: 'POST', body: JSON.stringify({ id, label: newSetLabel.trim() }),
+    }, token);
+    setSets(prev => [...prev, { id, label: newSetLabel.trim(), photos: [] }]);
+    setNewSetLabel(''); setAddSetOpen(false);
+  };
+
+  const handleDeleteSet = async (setId) => {
+    if (!confirm('Delete this set and all its photos?')) return;
+    await apiFetch(`/api/galleries/${gallery.id}/sets/${setId}`, { method: 'DELETE' }, token);
+    setSets(prev => prev.filter(s => s.id !== setId));
+    if (expandedSet === setId) setExpandedSet(null);
+  };
+
+  const handlePhotoAdded = async (setId) => {
+    // Refetch the specific gallery to get updated photo list
+    const galleries = await apiFetch('/api/galleries');
+    const updated = galleries.find(g => g.id === gallery.id);
+    if (updated) setSets(updated.sets);
+    setAddingPhotoToSet(null);
+  };
+
+  return (
+    <div className="modal-overlay" onClick={onClose}>
+      <div className="modal modal-wide" onClick={e => e.stopPropagation()}>
+        <div className="modal-header">
+          <h2>{isNew ? 'New Gallery' : 'Edit Gallery'}</h2>
+          <button className="btn btn-ghost btn-sm" onClick={onClose} style={{padding:'6px'}}>
+            <span style={{width:18,height:18,display:'block'}}>{Icon.close()}</span>
+          </button>
+        </div>
+        <div className="modal-body">
+          {/* Metadata fields */}
+          <div className="form-field">
+            <label>Title *</label>
+            <input type="text" value={form.title} onChange={e => setField('title', e.target.value)} placeholder="Meghan & Desmond" />
+          </div>
+          <div className="form-field">
+            <label>Subtitle / Category Line</label>
+            <input type="text" value={form.subtitle} onChange={e => setField('subtitle', e.target.value)} placeholder="Wedding · June 2025 · Napa Valley, CA" />
+          </div>
+          <div className="form-row">
+            <div className="form-field">
+              <label>Date</label>
+              <input type="text" value={form.date} onChange={e => setField('date', e.target.value)} placeholder="June 14, 2025" />
+            </div>
+            <div className="form-field">
+              <label>Location</label>
+              <input type="text" value={form.location} onChange={e => setField('location', e.target.value)} placeholder="Napa Valley, CA" />
+            </div>
+          </div>
+          <div className="form-field">
+            <label>Cover Image URL</label>
+            <input type="url" value={form.cover} onChange={e => setField('cover', e.target.value)} placeholder="https://…/cover.jpg" />
+          </div>
+          <div className="form-field">
+            <label>Cover Thumbnail URL <span style={{opacity:0.5}}>(optional, defaults to cover URL)</span></label>
+            <input type="url" value={form.coverThumb} onChange={e => setField('coverThumb', e.target.value)} placeholder="https://…/cover-thumb.jpg" />
+          </div>
+
+          {/* Sets manager — only shown when editing existing gallery */}
+          {!isNew && sets.length > 0 && (
+            <div style={{marginTop:8}}>
+              <div style={{fontSize:10,letterSpacing:'0.14em',textTransform:'uppercase',color:'var(--fg2)',marginBottom:10}}>
+                Photo Sets
+              </div>
+              <div className="set-list">
+                {sets.map(s => (
+                  <div key={s.id} className="set-item">
+                    <div className="set-item-header" onClick={() => setExpandedSet(expandedSet === s.id ? null : s.id)}>
+                      <span style={{width:12,height:12,display:'block',flexShrink:0}}>
+                        {expandedSet === s.id ? Icon.chevUp() : Icon.chevDown()}
+                      </span>
+                      <span>{s.label}</span>
+                      <small>{s.photos.length} photos</small>
+                      {s.id !== 'all' && (
+                        <button className="btn btn-ghost btn-sm" style={{padding:'2px 6px',marginLeft:4}}
+                          onClick={e => { e.stopPropagation(); handleDeleteSet(s.id); }}>
+                          <span style={{width:13,height:13,display:'block'}}>{Icon.trash()}</span>
+                        </button>
+                      )}
+                    </div>
+                    {expandedSet === s.id && (
+                      <div className="set-item-body">
+                        {s.photos.length > 0 && (
+                          <div className="photo-thumb-grid">
+                            {s.photos.map(p => (
+                              <div key={p.id} className="photo-thumb-item">
+                                <img src={p.thumb || p.src} alt="" />
+                                <div className="photo-thumb-del">
+                                  <button onClick={() => handleDeletePhoto(s.id, p.id)} title="Remove photo">
+                                    <span style={{width:18,height:18,display:'block'}}>{Icon.trash()}</span>
+                                  </button>
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        )}
+                        {addingPhotoToSet === s.id
+                          ? <AddPhotoForm galleryId={gallery.id} setId={s.id} token={token}
+                              onAdded={() => handlePhotoAdded(s.id)} onCancel={() => setAddingPhotoToSet(null)} />
+                          : <button className="btn btn-secondary btn-sm" onClick={() => setAddingPhotoToSet(s.id)}>
+                              <span style={{width:12,height:12,display:'block'}}>{Icon.plus()}</span>
+                              Add Photo
+                            </button>
+                        }
+                      </div>
+                    )}
+                  </div>
+                ))}
+              </div>
+
+              {/* Add new set */}
+              {addSetOpen
+                ? <div style={{display:'flex',gap:8,alignItems:'flex-end',marginTop:8}}>
+                    <div className="form-field" style={{flex:1,marginBottom:0}}>
+                      <label>Set Name</label>
+                      <input type="text" value={newSetLabel} onChange={e => setNewSetLabel(e.target.value)}
+                        placeholder="e.g. Ceremony" onKeyDown={e => e.key === 'Enter' && handleAddSet()} autoFocus />
+                    </div>
+                    <button className="btn btn-secondary btn-sm" onClick={() => { setAddSetOpen(false); setNewSetLabel(''); }}>Cancel</button>
+                    <button className="btn btn-accent btn-sm" onClick={handleAddSet}>Add</button>
+                  </div>
+                : <button className="btn btn-secondary btn-sm" style={{marginTop:8}} onClick={() => setAddSetOpen(true)}>
+                    <span style={{width:12,height:12,display:'block'}}>{Icon.plus()}</span>
+                    Add Set
+                  </button>
+              }
+            </div>
+          )}
+
+          {error && <p className="form-error" style={{marginTop:14}}>{error}</p>}
+
+          <div className={`modal-actions ${!isNew ? 'modal-actions-split' : ''}`}>
+            {!isNew && (
+              <button className="btn btn-danger" onClick={handleDelete} disabled={deleting}>
+                <span style={{width:13,height:13,display:'block'}}>{Icon.trash()}</span>
+                {deleting ? 'Deleting…' : 'Delete Gallery'}
+              </button>
+            )}
+            <div style={{display:'flex',gap:10}}>
+              <button className="btn btn-secondary" onClick={onClose}>Cancel</button>
+              <button className="btn btn-primary" onClick={handleSave} disabled={saving}>
+                {saving ? 'Saving…' : (isNew ? 'Create Gallery' : 'Save Changes')}
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* ── Admin Drawer ── */
+function AdminDrawer({ galleries, token, onRefresh, onClose, showToast }) {
+  const [editing, setEditing] = useState(null);   // gallery object or 'new'
+  const [search, setSearch] = useState('');
+
+  const filtered = galleries.filter(g =>
+    g.title.toLowerCase().includes(search.toLowerCase())
+  );
+
+  const handleSaved = async () => {
+    await onRefresh();
+    setEditing(null);
+    showToast('Gallery saved');
+  };
+
+  const handleDeleted = async () => {
+    await onRefresh();
+    setEditing(null);
+    showToast('Gallery deleted');
+  };
+
+  return (
+    <>
+      <div className="admin-drawer">
+        <div className="admin-drawer-overlay" onClick={onClose} />
+        <div className="admin-drawer-panel">
+          <div className="admin-drawer-header">
+            <h2>Gallery Manager</h2>
+            <button className="btn btn-ghost btn-sm" style={{padding:'6px'}} onClick={onClose}>
+              <span style={{width:18,height:18,display:'block'}}>{Icon.close()}</span>
+            </button>
+          </div>
+          <div className="admin-drawer-body">
+            <button className="btn btn-primary btn-full" style={{marginBottom:18}}
+              onClick={() => setEditing('new')}>
+              <span style={{width:13,height:13,display:'block'}}>{Icon.plus()}</span>
+              New Gallery
+            </button>
+            {galleries.length > 5 && (
+              <div className="form-field" style={{marginBottom:14}}>
+                <input type="search" placeholder="Search galleries…" value={search}
+                  onChange={e => setSearch(e.target.value)} />
+              </div>
+            )}
+            {filtered.map(g => (
+              <div key={g.id} className="admin-gallery-item">
+                {g.coverThumb
+                  ? <img src={g.coverThumb} alt={g.title} className="admin-gallery-thumb" />
+                  : <div className="admin-gallery-thumb skeleton" />
+                }
+                <div className="admin-gallery-info">
+                  <h4>{g.title}</h4>
+                  <p>{g.sets[0]?.photos.length ?? 0} photos &nbsp;·&nbsp; {g.sets.length} sets</p>
+                </div>
+                <button className="btn btn-secondary btn-sm" onClick={() => setEditing(g)}>
+                  <span style={{width:12,height:12,display:'block'}}>{Icon.edit()}</span>
+                  Edit
+                </button>
+              </div>
+            ))}
+            {filtered.length === 0 && (
+              <p style={{color:'var(--fg3)',fontSize:13,textAlign:'center',padding:'32px 0'}}>No galleries found</p>
+            )}
+          </div>
+        </div>
+      </div>
+
+      {editing && (
+        <GalleryEditorModal
+          gallery={editing === 'new' ? null : editing}
+          token={token}
+          onSaved={handleSaved}
+          onDeleted={handleDeleted}
+          onClose={() => setEditing(null)}
+        />
+      )}
+    </>
+  );
+}
+
+/* ── EXIF Panel ── */
+function ExifPanel({ photo, onClose }) {
+  const exif = photo.exif;
+  const fields = exif
+    ? [
+        { label: 'Camera',        value: exif.camera },
+        { label: 'Lens',          value: exif.lens },
+        { label: 'Aperture',      value: exif.aperture },
+        { label: 'Shutter',       value: exif.shutter },
+        { label: 'ISO',           value: exif.iso },
+        { label: 'Focal Length',  value: exif.focalLength },
+      ].filter(f => f.value)
+    : [];
+
+  return (
+    <div className="lb-exif-panel" onClick={e => e.stopPropagation()}>
+      <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',marginBottom:fields.length ? 14 : 0}}>
+        <span className="lb-exif-title">EXIF Data</span>
+        <button onClick={onClose} style={{background:'none',border:'none',cursor:'pointer',color:'rgba(255,255,255,0.4)',display:'flex',padding:'2px'}}>
+          <span style={{width:14,height:14,display:'block'}}>{Icon.close()}</span>
+        </button>
+      </div>
+      {fields.length > 0
+        ? <div className="exif-grid">
+            {fields.map(f => (
+              <div key={f.label}>
+                <div className="exif-row-label">{f.label}</div>
+                <div className="exif-row-value">{f.value}</div>
+              </div>
+            ))}
+          </div>
+        : <p className="exif-empty">No EXIF data — add via Admin Panel</p>
+      }
+    </div>
+  );
+}
+
 /* ── Lightbox ── */
-function Lightbox({ photos, index, liked, onClose, onPrev, onNext, onLike }) {
+function Lightbox({ photos, index, liked, onClose, onPrev, onNext, onLike, isAdmin }) {
+  const [showExif, setShowExif] = useState(false);
   const photo = photos[index];
+
+  useEffect(() => { setShowExif(false); }, [index]);
+
   useEffect(() => {
     const fn = (e) => {
       if (e.key === 'ArrowLeft') onPrev();
@@ -466,6 +1084,9 @@ function Lightbox({ photos, index, liked, onClose, onPrev, onNext, onLike }) {
           <span style={{width:20,height:20,display:'block'}}>{Icon.chevRight()}</span>
         </button>
       )}
+
+      {showExif && <ExifPanel photo={photo} onClose={() => setShowExif(false)} />}
+
       <div className="lb-meta" onClick={e => e.stopPropagation()}>
         <span>{index + 1} / {photos.length}</span>
         <button className={`lb-heart ${liked ? 'liked' : ''}`} onClick={() => onLike(photo.id)}>
@@ -476,6 +1097,12 @@ function Lightbox({ photos, index, liked, onClose, onPrev, onNext, onLike }) {
           <span style={{width:16,height:16,display:'block'}}>{Icon.download()}</span>
           <span>Download</span>
         </button>
+        {isAdmin && (
+          <button className={`lb-heart ${showExif ? 'liked' : ''}`} onClick={() => setShowExif(s => !s)} title="Toggle EXIF data">
+            <span style={{width:16,height:16,display:'block'}}>{Icon.info()}</span>
+            <span>EXIF</span>
+          </button>
+        )}
       </div>
     </div>
   );
@@ -504,7 +1131,7 @@ function PhotoGrid({ photos, likedIds, onPhotoClick, onLike }) {
 }
 
 /* ── Gallery View ── */
-function GalleryView({ gallery, likedIds, onLike, onBack, showToast, heroHeight, navStyle }) {
+function GalleryView({ gallery, likedIds, onLike, onBack, showToast, heroHeight, navStyle, isAdmin, adminToken, onRefresh }) {
   const [activeSet, setActiveSet] = useState('all');
   const [lightbox, setLightbox] = useState(null);
   const [showFavs, setShowFavs] = useState(false);
@@ -537,9 +1164,9 @@ function GalleryView({ gallery, likedIds, onLike, onBack, showToast, heroHeight,
         scrolled={scrolled || alwaysSolid}
         favorites={showFavs}
         onToggleFavs={() => setShowFavs(f => !f)}
+        isAdmin={isAdmin}
       />
 
-      {/* Hero */}
       <div className="gallery-hero" style={{height: heroH}}>
         <img src={gallery.cover} alt={gallery.title} />
         <div className="gallery-hero-overlay" />
@@ -553,7 +1180,6 @@ function GalleryView({ gallery, likedIds, onLike, onBack, showToast, heroHeight,
         </div>
       </div>
 
-      {/* Sets nav */}
       {gallery.sets.length > 1 && (
         <div className="sets-nav">
           {gallery.sets.map(s => (
@@ -565,7 +1191,6 @@ function GalleryView({ gallery, likedIds, onLike, onBack, showToast, heroHeight,
         </div>
       )}
 
-      {/* Back */}
       <div style={{padding:'20px 24px 4px'}}>
         <button className="back-btn" onClick={onBack}>
           <span style={{width:14,height:14,display:'block'}}>{Icon.chevLeft()}</span>
@@ -573,7 +1198,6 @@ function GalleryView({ gallery, likedIds, onLike, onBack, showToast, heroHeight,
         </button>
       </div>
 
-      {/* Favorites empty state */}
       {showFavs && photos.length === 0 && (
         <div style={{textAlign:'center',padding:'80px 32px',color:'var(--fg2)'}}>
           <p style={{fontFamily:'var(--serif)',fontSize:22,marginBottom:8}}>No favorites yet</p>
@@ -601,6 +1225,7 @@ function GalleryView({ gallery, likedIds, onLike, onBack, showToast, heroHeight,
           onClose={closeLightbox}
           onPrev={prevPhoto}
           onNext={nextPhoto}
+          isAdmin={isAdmin}
           onLike={(id) => {
             onLike(id);
             showToast(likedIds.has(id) ? 'Removed from favorites' : 'Added to favorites');
@@ -612,7 +1237,7 @@ function GalleryView({ gallery, likedIds, onLike, onBack, showToast, heroHeight,
 }
 
 /* ── Home View ── */
-function HomeView({ onSelectGallery }) {
+function HomeView({ galleries, onSelectGallery, isAdmin, onEditGallery, onNewGallery }) {
   const [scrolled, setScrolled] = useState(false);
   useEffect(() => {
     const fn = () => setScrolled(window.scrollY > 10);
@@ -622,20 +1247,34 @@ function HomeView({ onSelectGallery }) {
 
   return (
     <div>
-      <Nav view="home" onHome={() => {}} transparent={false} scrolled={true} />
+      <Nav view="home" onHome={() => {}} transparent={false} scrolled={true} isAdmin={isAdmin} />
       <div className="home-header">
         <h1>{PHOTOGRAPHER}</h1>
         <p>Photography &nbsp;·&nbsp; San Francisco, CA</p>
+        {isAdmin && (
+          <button className="btn btn-accent" style={{marginTop:20}} onClick={onNewGallery}>
+            <span style={{width:13,height:13,display:'block'}}>{Icon.plus()}</span>
+            New Gallery
+          </button>
+        )}
       </div>
       <div className="gallery-grid">
-        {GALLERIES.map(g => (
+        {galleries.map(g => (
           <div key={g.id} className="gallery-card" onClick={() => onSelectGallery(g)}>
-            <img src={g.coverThumb} alt={g.title} loading="lazy" />
+            <img src={g.coverThumb || g.cover} alt={g.title} loading="lazy" />
             <div className="gallery-card-overlay">
               <div className="gallery-card-title">{g.title}</div>
               <div className="gallery-card-meta">{g.subtitle}</div>
             </div>
-            <div className="gallery-card-count">{g.sets[0].photos.length} photos</div>
+            <div className="gallery-card-count">{g.sets[0]?.photos.length ?? 0} photos</div>
+            {isAdmin && (
+              <div className="gallery-card-edit">
+                <button onClick={e => { e.stopPropagation(); onEditGallery(g); }}>
+                  <svg viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" strokeWidth="1.5"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" strokeWidth="1.5"/></svg>
+                  Edit
+                </button>
+              </div>
+            )}
           </div>
         ))}
       </div>
@@ -650,6 +1289,9 @@ function HomeView({ onSelectGallery }) {
 function App() {
   const [view, setView] = useState('home');
   const [activeGallery, setActiveGallery] = useState(null);
+  const [galleries, setGalleries] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState(null);
   const [likedIds, setLikedIds] = useState(() => {
     try { return new Set(JSON.parse(localStorage.getItem('gallery_liked') || '[]')); }
     catch { return new Set(); }
@@ -657,6 +1299,13 @@ function App() {
   const [toast, setToast] = useState(null);
   const toastTimer = useRef(null);
   const [tweaks, setTweak] = useTweaks(TWEAK_DEFAULTS);
+
+  // Admin state — token stored in sessionStorage survives page refresh
+  const [adminToken, setAdminToken] = useState(() => sessionStorage.getItem('gallery_admin_token') || null);
+  const isAdmin = !!adminToken;
+  const [showAdminLogin, setShowAdminLogin] = useState(false);
+  const [showAdminPanel, setShowAdminPanel] = useState(false);
+  const [editingGallery, setEditingGallery] = useState(null); // null | 'new' | gallery object
 
   useEffect(() => {
     document.documentElement.style.setProperty('--accent', tweaks.accentColor);
@@ -670,6 +1319,63 @@ function App() {
     clearTimeout(toastTimer.current);
     toastTimer.current = setTimeout(() => setToast(null), 2200);
   }, []);
+
+  // Fetch galleries from API
+  const fetchGalleries = useCallback(async () => {
+    try {
+      const data = await apiFetch('/api/galleries');
+      setGalleries(data);
+      // If we're in a gallery view, refresh the active gallery object too
+      setActiveGallery(prev => prev ? (data.find(g => g.id === prev.id) || prev) : null);
+      setLoadError(null);
+    } catch (e) {
+      setLoadError('Could not connect to the gallery server. Make sure the server is running.');
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  useEffect(() => { fetchGalleries(); }, []);
+
+  // Admin auth
+  const handleLogin = useCallback(async (username, password) => {
+    try {
+      const { token } = await apiFetch('/api/auth/login', {
+        method: 'POST', body: JSON.stringify({ username, password }),
+      });
+      sessionStorage.setItem('gallery_admin_token', token);
+      setAdminToken(token);
+      setShowAdminLogin(false);
+      showToast('Signed in as admin');
+      return true;
+    } catch {
+      return false;
+    }
+  }, [showToast]);
+
+  const handleLogout = useCallback(async () => {
+    if (adminToken) {
+      try { await apiFetch('/api/auth/logout', { method: 'POST' }, adminToken); } catch {}
+    }
+    sessionStorage.removeItem('gallery_admin_token');
+    setAdminToken(null);
+    setShowAdminPanel(false);
+    showToast('Signed out');
+  }, [adminToken, showToast]);
+
+  const handleAdminSaved = useCallback(async () => {
+    await fetchGalleries();
+    setEditingGallery(null);
+    showToast('Gallery saved');
+  }, [fetchGalleries, showToast]);
+
+  const handleAdminDeleted = useCallback(async () => {
+    await fetchGalleries();
+    setEditingGallery(null);
+    showToast('Gallery deleted');
+    setView('home');
+    setActiveGallery(null);
+  }, [fetchGalleries, showToast]);
 
   const toggleLike = useCallback((id) => {
     setLikedIds(prev => {
@@ -692,6 +1398,23 @@ function App() {
     window.scrollTo(0, 0);
   }, []);
 
+  if (loading) {
+    return (
+      <div className="loading-screen">
+        <div className="loading-spinner" />
+        <p>Loading galleries</p>
+      </div>
+    );
+  }
+
+  if (loadError) {
+    return (
+      <div className="loading-screen">
+        <p style={{color:'var(--fg2)',maxWidth:400,textAlign:'center',lineHeight:1.7}}>{loadError}</p>
+      </div>
+    );
+  }
+
   return (
     <>
       <style>{`
@@ -701,7 +1424,15 @@ function App() {
         @media (max-width: 560px) { .photo-grid { columns: 1; } }
       `}</style>
 
-      {view === 'home' && <HomeView onSelectGallery={selectGallery} />}
+      {view === 'home' && (
+        <HomeView
+          galleries={galleries}
+          onSelectGallery={selectGallery}
+          isAdmin={isAdmin}
+          onEditGallery={(g) => setEditingGallery(g)}
+          onNewGallery={() => setEditingGallery('new')}
+        />
+      )}
       {view === 'gallery' && activeGallery && (
         <GalleryView
           gallery={activeGallery}
@@ -711,9 +1442,53 @@ function App() {
           showToast={showToast}
           heroHeight={tweaks.heroHeight}
           navStyle={tweaks.navStyle}
+          isAdmin={isAdmin}
+          adminToken={adminToken}
+          onRefresh={fetchGalleries}
         />
       )}
+
+      {/* Nav admin controls (only visible in gallery view, home view Nav handles its own) */}
+      {view === 'gallery' && (
+        <div style={{position:'fixed',top:0,right:isAdmin?170:120,zIndex:101,height:'var(--nav-h)',display:'flex',alignItems:'center',gap:12}}>
+          {isAdmin
+            ? <>
+                <span className="admin-badge">Admin</span>
+                <button className="nav-icon" title="Sign out" onClick={handleLogout} style={{color:'var(--fg)'}}>
+                  <span style={{width:18,height:18,display:'block'}}>{Icon.logout()}</span>
+                </button>
+              </>
+            : <button className="nav-icon" title="Admin login" onClick={() => setShowAdminLogin(true)} style={{color:'var(--fg)'}}>
+                <span style={{width:18,height:18,display:'block'}}>{Icon.key()}</span>
+              </button>
+          }
+        </div>
+      )}
+
       {toast && <Toast msg={toast} />}
+
+      {/* Admin modals */}
+      {showAdminLogin && (
+        <AdminLoginModal onLogin={handleLogin} onClose={() => setShowAdminLogin(false)} />
+      )}
+      {showAdminPanel && (
+        <AdminDrawer
+          galleries={galleries}
+          token={adminToken}
+          onRefresh={fetchGalleries}
+          onClose={() => setShowAdminPanel(false)}
+          showToast={showToast}
+        />
+      )}
+      {editingGallery && (
+        <GalleryEditorModal
+          gallery={editingGallery === 'new' ? null : editingGallery}
+          token={adminToken}
+          onSaved={handleAdminSaved}
+          onDeleted={handleAdminDeleted}
+          onClose={() => setEditingGallery(null)}
+        />
+      )}
 
       <TweaksPanel>
         <TweakSection label="Layout">
