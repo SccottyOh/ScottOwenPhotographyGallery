@@ -10,6 +10,7 @@
   <script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
   <script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" crossorigin="anonymous"></script>
   <script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+  <script src="https://unpkg.com/exifr@7.1.3/dist/full.umd.js"></script>
   <script type="text/babel" src="tweaks-panel.jsx"></script>
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -634,10 +635,50 @@ function AddPhotoForm({ galleryId, setId, token, onAdded, onCancel }) {
   const [height, setHeight] = useState('900');
   const [showExif, setShowExif] = useState(false);
   const [exif, setExif] = useState(EXIF_BLANK);
+  const [detecting, setDetecting] = useState(false);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
+  const detectTimer = useRef(null);
 
   const setExifField = (k, v) => setExif(x => ({...x, [k]: v}));
+
+  // Auto-detect dimensions and EXIF when URL is entered
+  const handleSrcChange = (val) => {
+    setSrc(val);
+    clearTimeout(detectTimer.current);
+    if (!val.trim()) return;
+    detectTimer.current = setTimeout(async () => {
+      setDetecting(true);
+      // Detect image dimensions
+      try {
+        await new Promise((resolve) => {
+          const img = new Image();
+          img.onload = () => { setWidth(String(img.naturalWidth || 1200)); setHeight(String(img.naturalHeight || 900)); resolve(); };
+          img.onerror = resolve;
+          img.src = val.trim();
+        });
+      } catch {}
+      // Auto-detect EXIF via exifr if available
+      if (typeof window.exifr !== 'undefined') {
+        try {
+          const fmtShutter = (v) => v ? (v >= 1 ? `${v}s` : `1/${Math.round(1/v)}s`) : '';
+          const d = await window.exifr.parse(val.trim(), { tiff: true, exif: true, gps: false });
+          if (d && Object.keys(d).length > 0) {
+            setShowExif(true);
+            setExif({
+              camera: [d.Make, d.Model].filter(Boolean).join(' ').trim(),
+              lens: d.LensModel || '',
+              aperture: d.FNumber ? `f/${d.FNumber}` : '',
+              shutter: fmtShutter(d.ExposureTime),
+              iso: d.ISO ? String(d.ISO) : '',
+              focalLength: d.FocalLength ? `${Math.round(d.FocalLength)}mm` : '',
+            });
+          }
+        } catch {}
+      }
+      setDetecting(false);
+    }, 600);
+  };
 
   const handleAdd = async () => {
     if (!src.trim()) { setError('Photo URL is required'); return; }
@@ -657,8 +698,11 @@ function AddPhotoForm({ galleryId, setId, token, onAdded, onCancel }) {
     <div className="add-photo-form">
       <h4>Add Photo by URL</h4>
       <div className="form-field" style={{marginBottom:10}}>
-        <label>Photo URL *</label>
-        <input type="url" placeholder="https://…" value={src} onChange={e => setSrc(e.target.value)} />
+        <label>
+          Photo URL *
+          {detecting && <span style={{marginLeft:8,opacity:0.5,fontWeight:300,textTransform:'none',letterSpacing:0}}>detecting…</span>}
+        </label>
+        <input type="url" placeholder="https://…" value={src} onChange={e => handleSrcChange(e.target.value)} />
       </div>
       <div className="form-field" style={{marginBottom:10}}>
         <label>Thumbnail URL <span style={{opacity:0.5}}>(optional, defaults to photo URL)</span></label>
@@ -1016,36 +1060,69 @@ function AdminDrawer({ galleries, token, onRefresh, onClose, showToast }) {
 
 /* ── EXIF Panel ── */
 function ExifPanel({ photo, onClose }) {
-  const exif = photo.exif;
-  const fields = exif
+  const stored = photo.exif;
+  const [liveRows, setLiveRows] = useState(null);
+  const [liveStatus, setLiveStatus] = useState('idle'); // idle | loading | done | error
+
+  // If no stored EXIF, attempt live detection via exifr
+  useEffect(() => {
+    if (stored) return;
+    if (typeof window.exifr === 'undefined') { setLiveStatus('error'); return; }
+    setLiveStatus('loading');
+    const fmtShutter = (v) => v ? (v >= 1 ? `${v}s` : `1/${Math.round(1/v)}s`) : null;
+    window.exifr.parse(photo.src, { tiff: true, exif: true, gps: false })
+      .then(d => {
+        if (!d || Object.keys(d).length === 0) { setLiveStatus('done'); setLiveRows([]); return; }
+        const rows = [];
+        const camera = [d.Make, d.Model].filter(Boolean).join(' ').trim();
+        if (camera) rows.push(['Camera', camera]);
+        if (d.LensModel) rows.push(['Lens', d.LensModel]);
+        if (d.FocalLength) rows.push(['Focal Length', `${Math.round(d.FocalLength)}mm`]);
+        if (d.FNumber) rows.push(['Aperture', `f/${d.FNumber}`]);
+        const shutter = fmtShutter(d.ExposureTime);
+        if (shutter) rows.push(['Shutter', shutter]);
+        if (d.ISO) rows.push(['ISO', String(d.ISO)]);
+        setLiveRows(rows);
+        setLiveStatus('done');
+      })
+      .catch(() => setLiveStatus('error'));
+  }, [photo.src, stored]);
+
+  const storedFields = stored
     ? [
-        { label: 'Camera',        value: exif.camera },
-        { label: 'Lens',          value: exif.lens },
-        { label: 'Aperture',      value: exif.aperture },
-        { label: 'Shutter',       value: exif.shutter },
-        { label: 'ISO',           value: exif.iso },
-        { label: 'Focal Length',  value: exif.focalLength },
+        { label: 'Camera',       value: stored.camera },
+        { label: 'Lens',         value: stored.lens },
+        { label: 'Aperture',     value: stored.aperture },
+        { label: 'Shutter',      value: stored.shutter },
+        { label: 'ISO',          value: stored.iso },
+        { label: 'Focal Length', value: stored.focalLength },
       ].filter(f => f.value)
     : [];
 
+  const rows = stored
+    ? storedFields.map(f => [f.label, f.value])
+    : (liveRows || []);
+
   return (
     <div className="lb-exif-panel" onClick={e => e.stopPropagation()}>
-      <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',marginBottom:fields.length ? 14 : 0}}>
+      <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',marginBottom: rows.length ? 14 : 8}}>
         <span className="lb-exif-title">EXIF Data</span>
         <button onClick={onClose} style={{background:'none',border:'none',cursor:'pointer',color:'rgba(255,255,255,0.4)',display:'flex',padding:'2px'}}>
           <span style={{width:14,height:14,display:'block'}}>{Icon.close()}</span>
         </button>
       </div>
-      {fields.length > 0
+      {!stored && liveStatus === 'loading' && <p className="exif-empty">Reading metadata…</p>}
+      {!stored && liveStatus === 'error' && <p className="exif-empty">Couldn't read EXIF (CORS or unsupported source)</p>}
+      {rows.length > 0
         ? <div className="exif-grid">
-            {fields.map(f => (
-              <div key={f.label}>
-                <div className="exif-row-label">{f.label}</div>
-                <div className="exif-row-value">{f.value}</div>
+            {rows.map(([label, value]) => (
+              <div key={label}>
+                <div className="exif-row-label">{label}</div>
+                <div className="exif-row-value">{value}</div>
               </div>
             ))}
           </div>
-        : <p className="exif-empty">No EXIF data — add via Admin Panel</p>
+        : (liveStatus === 'done' || stored) && <p className="exif-empty">No EXIF data — add via Admin Panel</p>
       }
     </div>
   );
