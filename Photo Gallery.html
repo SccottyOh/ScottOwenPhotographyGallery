@@ -72,6 +72,12 @@
     }
     .nav-icon:hover { background: rgba(0,0,0,0.07); }
     .nav-icon svg { width: 18px; height: 18px; stroke: currentColor; fill: none; stroke-width: 1.5; }
+    .admin-badge {
+      font-size: 10px; letter-spacing: 0.12em; text-transform: uppercase;
+      color: var(--accent); background: rgba(139,115,85,0.12);
+      padding: 3px 8px; border-radius: 10px; font-weight: 500;
+    }
+    .nav.dark:not(.solid) .admin-badge { color: rgba(255,255,255,0.8); background: rgba(255,255,255,0.15); }
 
     /* Home */
     .home-header {
@@ -116,6 +122,20 @@
       font-size: 11px; letter-spacing: 0.1em; padding: 4px 10px; border-radius: 20px;
       backdrop-filter: blur(4px);
     }
+    .gallery-card-edit {
+      position: absolute; top: 16px; left: 16px;
+      opacity: 0; transition: opacity 0.2s;
+    }
+    .gallery-card:hover .gallery-card-edit { opacity: 1; }
+    .gallery-card-edit button {
+      background: rgba(0,0,0,0.55); backdrop-filter: blur(6px);
+      color: #fff; border: none; cursor: pointer;
+      font-family: var(--sans); font-size: 10px; letter-spacing: 0.12em; text-transform: uppercase;
+      padding: 5px 12px; border-radius: 4px; display: flex; align-items: center; gap: 5px;
+      transition: background 0.15s;
+    }
+    .gallery-card-edit button:hover { background: rgba(0,0,0,0.75); }
+    .gallery-card-edit button svg { width: 12px; height: 12px; stroke: currentColor; fill: none; stroke-width: 1.5; }
 
     /* Gallery hero */
     .gallery-hero {
@@ -240,6 +260,30 @@
     .lb-heart svg { width: 16px; height: 16px; stroke: currentColor; fill: none; stroke-width: 1.8; transition: fill 0.15s; }
     .lb-heart.liked svg { fill: #e05555; }
 
+    /* EXIF panel in lightbox */
+    .lb-exif-panel {
+      position: fixed; bottom: 80px; left: 50%; transform: translateX(-50%);
+      background: rgba(12,10,8,0.92); backdrop-filter: blur(16px);
+      border: 1px solid rgba(255,255,255,0.1); border-radius: 10px;
+      padding: 20px 24px; min-width: 340px; max-width: 90vw;
+      animation: lbIn 0.2s ease;
+      z-index: 10;
+    }
+    .lb-exif-title {
+      font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase;
+      color: rgba(255,255,255,0.35); margin-bottom: 14px;
+    }
+    .exif-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px 28px; }
+    .exif-row-label {
+      font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase;
+      color: rgba(255,255,255,0.35); margin-bottom: 2px;
+    }
+    .exif-row-value { font-size: 13px; color: rgba(255,255,255,0.85); }
+    .exif-empty {
+      font-size: 12px; color: rgba(255,255,255,0.35); letter-spacing: 0.06em;
+      text-align: center; padding: 6px 0;
+    }
+
     /* Footer */
     .gallery-footer {
       text-align: center; padding: 48px 32px;
@@ -268,176 +312,173 @@
     .back-btn:hover { color: var(--fg); }
     .back-btn svg { width: 14px; height: 14px; stroke: currentColor; fill: none; stroke-width: 1.5; }
 
-    /* Admin */
-    .admin-badge {
-      font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase;
-      color: var(--accent); padding: 4px 10px; border: 1px solid var(--accent);
-      border-radius: 20px; margin-right: 8px;
+    /* Loading */
+    .loading-screen {
+      min-height: 100vh; display: flex; align-items: center; justify-content: center;
+      flex-direction: column; gap: 20px;
     }
-    .admin-login-btn {
-      background: none; border: 1px solid currentColor; cursor: pointer;
-      color: inherit; font-family: var(--sans);
-      font-size: 11px; letter-spacing: 0.14em; text-transform: uppercase;
-      padding: 7px 14px; border-radius: 20px;
-      display: flex; align-items: center; gap: 6px;
-      transition: background 0.15s, color 0.15s, opacity 0.15s;
-      opacity: 0.85;
+    .loading-spinner {
+      width: 32px; height: 32px; border: 2px solid var(--bg2);
+      border-top-color: var(--accent); border-radius: 50%;
+      animation: spin 0.7s linear infinite;
     }
-    .admin-login-btn:hover { opacity: 1; background: rgba(0,0,0,0.05); }
-    .nav.dark:not(.solid) .admin-login-btn:hover { background: rgba(255,255,255,0.12); }
-    .admin-login-btn svg { width: 12px; height: 12px; stroke: currentColor; fill: none; stroke-width: 1.8; }
-    .modal-backdrop {
-      position: fixed; inset: 0; z-index: 500; background: rgba(8,7,5,0.7);
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .loading-screen p { font-size: 12px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--fg3); }
+
+    /* ── Admin styles ── */
+    .modal-overlay {
+      position: fixed; inset: 0; z-index: 500;
+      background: rgba(0,0,0,0.55); backdrop-filter: blur(4px);
       display: flex; align-items: center; justify-content: center;
-      animation: lbIn 0.2s ease; padding: 20px;
+      padding: 24px; animation: lbIn 0.18s ease;
     }
     .modal {
-      background: var(--white); border-radius: 8px; max-width: 560px; width: 100%;
+      background: var(--bg); border-radius: 10px;
+      width: 100%; max-width: 480px;
+      box-shadow: 0 24px 80px rgba(0,0,0,0.3);
       max-height: 90vh; overflow-y: auto;
-      box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+      animation: modalSlideIn 0.22s cubic-bezier(0.34,1.2,0.64,1);
     }
+    .modal-wide { max-width: 720px; }
+    @keyframes modalSlideIn { from { opacity: 0; transform: scale(0.96) translateY(10px); } to { opacity: 1; transform: scale(1) translateY(0); } }
     .modal-header {
-      padding: 24px 28px 16px; border-bottom: 1px solid rgba(0,0,0,0.08);
       display: flex; align-items: center; justify-content: space-between;
+      padding: 28px 32px 0; margin-bottom: 24px;
     }
     .modal-header h2 {
-      font-family: var(--serif); font-weight: 400; font-size: 22px; letter-spacing: 0.02em;
+      font-family: var(--serif); font-size: 26px; font-weight: 300;
+      letter-spacing: 0.02em;
     }
-    .modal-close {
-      background: none; border: none; cursor: pointer; color: var(--fg2);
-      width: 32px; height: 32px; border-radius: 50%;
-      display: flex; align-items: center; justify-content: center;
-      transition: background 0.15s;
-    }
-    .modal-close:hover { background: rgba(0,0,0,0.06); color: var(--fg); }
-    .modal-close svg { width: 16px; height: 16px; stroke: currentColor; fill: none; stroke-width: 1.5; }
-    .modal-body { padding: 20px 28px 28px; }
-    .form-row { margin-bottom: 14px; }
-    .form-row label {
-      display: block; font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase;
-      color: var(--fg2); margin-bottom: 6px;
-    }
-    .form-row input[type="text"], .form-row input[type="password"], .form-row input[type="url"],
-    .form-row textarea {
-      width: 100%; padding: 10px 12px; border: 1px solid rgba(0,0,0,0.15);
-      border-radius: 4px; font-family: var(--sans); font-size: 13px; color: var(--fg);
-      background: var(--white); outline: none; transition: border-color 0.15s;
-    }
-    .form-row input:focus, .form-row textarea:focus { border-color: var(--accent); }
-    .form-row textarea { min-height: 70px; resize: vertical; }
-    .form-error {
-      font-size: 12px; color: #c44; margin-top: 8px;
-    }
-    .btn-primary {
-      background: var(--fg); color: var(--white); border: none;
-      padding: 10px 20px; border-radius: 4px; cursor: pointer;
-      font-family: var(--sans); font-size: 12px; letter-spacing: 0.08em;
-      text-transform: uppercase; transition: background 0.15s;
-    }
-    .btn-primary:hover { background: var(--accent); }
-    .btn-secondary {
-      background: transparent; color: var(--fg); border: 1px solid rgba(0,0,0,0.15);
-      padding: 10px 20px; border-radius: 4px; cursor: pointer;
-      font-family: var(--sans); font-size: 12px; letter-spacing: 0.08em;
-      text-transform: uppercase; transition: background 0.15s;
-    }
-    .btn-secondary:hover { background: rgba(0,0,0,0.04); }
-    .btn-danger {
-      background: transparent; color: #c44; border: 1px solid #c44;
-      padding: 10px 20px; border-radius: 4px; cursor: pointer;
-      font-family: var(--sans); font-size: 12px; letter-spacing: 0.08em;
-      text-transform: uppercase; transition: all 0.15s;
-    }
-    .btn-danger:hover { background: #c44; color: var(--white); }
-    .btn-row { display: flex; gap: 10px; justify-content: flex-end; margin-top: 20px; flex-wrap: wrap; }
+    .modal-body { padding: 0 32px 32px; }
 
-    .gallery-card-edit {
-      position: absolute; top: 16px; left: 16px;
-      background: rgba(0,0,0,0.55); color: rgba(255,255,255,0.95);
-      font-size: 11px; letter-spacing: 0.1em; padding: 6px 12px; border-radius: 20px;
-      backdrop-filter: blur(4px); border: none; cursor: pointer;
-      text-transform: uppercase; transition: background 0.15s;
+    .form-field { margin-bottom: 18px; }
+    .form-field label {
+      display: block; font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase;
+      color: var(--fg2); margin-bottom: 7px; font-weight: 400;
     }
-    .gallery-card-edit:hover { background: rgba(0,0,0,0.75); }
+    .form-field input, .form-field textarea, .form-field select {
+      width: 100%; padding: 9px 12px;
+      border: 1px solid rgba(0,0,0,0.15); border-radius: 5px;
+      background: var(--white); color: var(--fg);
+      font-family: var(--sans); font-size: 13px; font-weight: 300;
+      outline: none; transition: border-color 0.2s;
+    }
+    .form-field input:focus, .form-field textarea:focus { border-color: var(--accent); }
+    .form-field textarea { resize: vertical; min-height: 70px; }
+    .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+    .form-error { font-size: 12px; color: #c0392b; margin-top: 6px; }
 
-    .new-gallery-card {
-      aspect-ratio: 4/3; background: var(--bg2);
-      display: flex; flex-direction: column; align-items: center; justify-content: center;
-      cursor: pointer; border: 2px dashed rgba(0,0,0,0.15);
-      transition: background 0.15s, border-color 0.15s;
+    .btn {
+      padding: 9px 22px; border-radius: 5px; border: none; cursor: pointer;
+      font-family: var(--sans); font-size: 11px; letter-spacing: 0.1em;
+      text-transform: uppercase; font-weight: 400;
+      transition: background 0.15s, color 0.15s; display: inline-flex; align-items: center; gap: 7px;
     }
-    .new-gallery-card:hover { background: var(--bg); border-color: var(--accent); }
-    .new-gallery-card .plus {
-      font-family: var(--serif); font-size: 48px; font-weight: 300; color: var(--fg2);
-      line-height: 1;
-    }
-    .new-gallery-card .label {
-      font-size: 11px; letter-spacing: 0.14em; text-transform: uppercase;
-      color: var(--fg2); margin-top: 12px;
-    }
+    .btn svg { width: 13px; height: 13px; stroke: currentColor; fill: none; stroke-width: 1.5; }
+    .btn-primary { background: var(--fg); color: var(--white); }
+    .btn-primary:hover { background: #333; }
+    .btn-accent { background: var(--accent); color: var(--white); }
+    .btn-accent:hover { background: #7a6449; }
+    .btn-secondary { background: transparent; color: var(--fg2); border: 1px solid rgba(0,0,0,0.15); }
+    .btn-secondary:hover { background: var(--bg2); color: var(--fg); }
+    .btn-danger { background: transparent; color: #c0392b; border: 1px solid rgba(192,57,43,0.3); }
+    .btn-danger:hover { background: rgba(192,57,43,0.08); }
+    .btn-ghost { background: none; border: none; color: var(--fg2); padding: 6px 10px; }
+    .btn-ghost:hover { color: var(--fg); background: var(--bg2); }
+    .btn-sm { padding: 6px 14px; font-size: 10px; }
+    .btn-full { width: 100%; justify-content: center; }
 
-    .photo-edit-list {
-      display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
-      gap: 8px; margin-top: 8px;
+    .modal-actions {
+      display: flex; gap: 10px; justify-content: flex-end;
+      padding-top: 24px; border-top: 1px solid rgba(0,0,0,0.07); margin-top: 24px;
     }
-    .photo-edit-item {
-      position: relative; aspect-ratio: 4/3; background: var(--bg2);
-      overflow: hidden; border-radius: 4px;
+    .modal-actions-split { justify-content: space-between; }
+
+    /* Admin panel (slide-in drawer) */
+    .admin-drawer {
+      position: fixed; inset: 0; z-index: 500;
+      display: flex; animation: lbIn 0.18s ease;
     }
-    .photo-edit-item img { width: 100%; height: 100%; object-fit: cover; display: block; }
-    .photo-edit-remove {
-      position: absolute; top: 4px; right: 4px;
-      width: 22px; height: 22px; border-radius: 50%; border: none;
-      background: rgba(0,0,0,0.65); color: #fff; cursor: pointer;
-      display: flex; align-items: center; justify-content: center;
-      font-size: 14px; line-height: 1;
+    .admin-drawer-overlay { flex: 1; background: rgba(0,0,0,0.45); backdrop-filter: blur(2px); }
+    .admin-drawer-panel {
+      width: 480px; max-width: 100vw; background: var(--bg);
+      overflow-y: auto; display: flex; flex-direction: column;
+      box-shadow: -16px 0 60px rgba(0,0,0,0.2);
+      animation: drawerIn 0.25s cubic-bezier(0.34,1.1,0.64,1);
     }
-    .photo-edit-remove:hover { background: #c44; }
-    .photo-add-row { display: flex; gap: 8px; margin-top: 10px; }
-    .photo-add-row input { flex: 1; }
-    .set-block {
-      border: 1px solid rgba(0,0,0,0.08); border-radius: 6px;
-      padding: 14px; margin-bottom: 14px; background: var(--bg);
-    }
-    .set-header {
+    @keyframes drawerIn { from { transform: translateX(40px); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+    .admin-drawer-header {
       display: flex; align-items: center; justify-content: space-between;
-      margin-bottom: 10px; gap: 8px;
+      padding: 28px 28px 20px; border-bottom: 1px solid rgba(0,0,0,0.07); flex-shrink: 0;
     }
-    .set-header input {
-      flex: 1; padding: 6px 10px; border: 1px solid rgba(0,0,0,0.12);
-      border-radius: 4px; font-family: var(--sans); font-size: 13px;
-      background: var(--white);
-    }
+    .admin-drawer-header h2 { font-family: var(--serif); font-size: 24px; font-weight: 300; }
+    .admin-drawer-body { padding: 20px 28px; flex: 1; }
 
-    /* EXIF panel */
+    .admin-gallery-item {
+      display: flex; align-items: center; gap: 14px;
+      padding: 12px 0; border-bottom: 1px solid rgba(0,0,0,0.06);
+    }
+    .admin-gallery-item:last-child { border-bottom: none; }
+    .admin-gallery-thumb {
+      width: 64px; height: 48px; object-fit: cover; border-radius: 4px;
+      background: var(--bg2); flex-shrink: 0;
+    }
+    .admin-gallery-info { flex: 1; min-width: 0; }
+    .admin-gallery-info h4 { font-family: var(--serif); font-size: 16px; font-weight: 400; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .admin-gallery-info p { font-size: 11px; color: var(--fg3); letter-spacing: 0.06em; margin-top: 2px; }
+
+    /* Set manager inside gallery editor */
+    .set-list { margin-top: 8px; }
+    .set-item {
+      border: 1px solid rgba(0,0,0,0.1); border-radius: 6px; margin-bottom: 10px; overflow: hidden;
+    }
+    .set-item-header {
+      display: flex; align-items: center; gap: 10px; padding: 12px 14px;
+      background: var(--bg2); cursor: pointer; user-select: none;
+    }
+    .set-item-header span { font-size: 12px; letter-spacing: 0.08em; flex: 1; }
+    .set-item-header small { font-size: 11px; color: var(--fg3); }
+    .set-item-body { padding: 14px; }
+
+    /* Photo thumbnails in set manager */
+    .photo-thumb-grid {
+      display: grid; grid-template-columns: repeat(auto-fill, minmax(80px, 1fr)); gap: 6px; margin-bottom: 12px;
+    }
+    .photo-thumb-item {
+      position: relative; aspect-ratio: 4/3; border-radius: 4px; overflow: hidden; background: var(--bg2);
+    }
+    .photo-thumb-item img { width: 100%; height: 100%; object-fit: cover; display: block; }
+    .photo-thumb-del {
+      position: absolute; inset: 0; background: rgba(0,0,0,0); display: flex;
+      align-items: center; justify-content: center; transition: background 0.15s;
+    }
+    .photo-thumb-del:hover { background: rgba(192,57,43,0.65); }
+    .photo-thumb-del button {
+      opacity: 0; background: none; border: none; cursor: pointer; color: #fff;
+      transition: opacity 0.15s;
+    }
+    .photo-thumb-del:hover button { opacity: 1; }
+    .photo-thumb-del button svg { width: 18px; height: 18px; stroke: currentColor; fill: none; stroke-width: 1.5; }
+
+    /* Add photo inline form */
+    .add-photo-form {
+      border: 1px dashed rgba(0,0,0,0.18); border-radius: 6px;
+      padding: 16px; margin-top: 10px; background: var(--white);
+    }
+    .add-photo-form h4 { font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--fg2); margin-bottom: 14px; }
     .exif-toggle {
-      position: fixed; top: 20px; left: 20px; z-index: 10;
-      background: rgba(255,255,255,0.1); backdrop-filter: blur(6px);
-      color: #fff; border: none; padding: 8px 14px; border-radius: 20px;
-      font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase;
-      cursor: pointer; transition: background 0.15s;
+      font-size: 11px; letter-spacing: 0.08em; color: var(--accent); cursor: pointer;
+      background: none; border: none; padding: 4px 0; margin-bottom: 10px; display: inline-block;
     }
-    .exif-toggle:hover { background: rgba(255,255,255,0.2); }
-    .exif-toggle.active { background: rgba(139,115,85,0.5); }
-    .exif-panel {
-      position: fixed; top: 76px; left: 20px; z-index: 10;
-      max-width: 280px; padding: 16px 18px;
-      background: rgba(20,18,15,0.85); backdrop-filter: blur(8px);
-      color: #fff; border-radius: 8px; font-size: 12px; line-height: 1.6;
-      animation: lbIn 0.2s ease;
+    .exif-section { border-top: 1px solid rgba(0,0,0,0.07); padding-top: 12px; margin-top: 4px; }
+
+    /* Loading skeleton */
+    .skeleton {
+      background: linear-gradient(90deg, var(--bg2) 25%, var(--bg) 50%, var(--bg2) 75%);
+      background-size: 200% 100%;
+      animation: shimmer 1.4s infinite; border-radius: 4px;
     }
-    .exif-panel h4 {
-      font-family: var(--serif); font-size: 14px; font-weight: 400;
-      margin-bottom: 8px; padding-bottom: 6px;
-      border-bottom: 1px solid rgba(255,255,255,0.15);
-      letter-spacing: 0.05em;
-    }
-    .exif-panel .row {
-      display: flex; justify-content: space-between; gap: 12px;
-      color: rgba(255,255,255,0.85);
-    }
-    .exif-panel .row .k { color: rgba(255,255,255,0.55); font-size: 11px; letter-spacing: 0.06em; }
-    .exif-panel .empty { color: rgba(255,255,255,0.5); font-style: italic; }
+    @keyframes shimmer { from { background-position: 200% 0; } to { background-position: -200% 0; } }
   </style>
 </head>
 <body>
@@ -454,161 +495,16 @@ const TWEAK_DEFAULTS = /*EDITMODE-BEGIN*/{
 }/*EDITMODE-END*/;
 
 const PHOTOGRAPHER = "Chris Ruth";
-const ADMIN_PASSWORD = "admin"; // demo password — client-side gate only
-const GALLERY_STORAGE_KEY = "gallery_data_v1";
 
-function makePhotos(seeds, setLabel) {
-  return seeds.map((seed, i) => ({
-    id: `${setLabel}-${i}`,
-    src: `https://picsum.photos/seed/${seed}/1200/900`,
-    thumb: `https://picsum.photos/seed/${seed}/600/450`,
-    w: seed % 3 === 0 ? 900 : 1200,
-    h: seed % 3 === 0 ? 1200 : (seed % 2 === 0 ? 800 : 900),
-  }));
+/* ── API helpers ── */
+async function apiFetch(url, opts = {}, token = null) {
+  const headers = { 'Content-Type': 'application/json', ...(opts.headers || {}) };
+  if (token) headers['Authorization'] = `Bearer ${token}`;
+  const res = await fetch(url, { ...opts, headers });
+  const data = await res.json();
+  if (!res.ok) throw new Error(data.error || 'Request failed');
+  return data;
 }
-
-function uid(prefix) {
-  return `${prefix}-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 7)}`;
-}
-
-function loadImageDims(url) {
-  return new Promise((resolve) => {
-    const img = new Image();
-    let done = false;
-    const finish = (dims) => { if (done) return; done = true; resolve(dims); };
-    img.onload = () => finish({ w: img.naturalWidth || null, h: img.naturalHeight || null });
-    img.onerror = () => finish({ w: null, h: null });
-    setTimeout(() => finish({ w: null, h: null }), 15000);
-    img.src = url;
-  });
-}
-
-function useAdmin() {
-  const [isAdmin, setIsAdmin] = useState(() => {
-    try { return sessionStorage.getItem('admin_session') === '1'; } catch { return false; }
-  });
-  const login = useCallback((pw) => {
-    if (pw === ADMIN_PASSWORD) {
-      try { sessionStorage.setItem('admin_session', '1'); } catch {}
-      setIsAdmin(true);
-      return true;
-    }
-    return false;
-  }, []);
-  const logout = useCallback(() => {
-    try { sessionStorage.removeItem('admin_session'); } catch {}
-    setIsAdmin(false);
-  }, []);
-  return { isAdmin, login, logout };
-}
-
-function useGalleries(initial) {
-  const [galleries, setGalleries] = useState(() => {
-    try {
-      const stored = localStorage.getItem(GALLERY_STORAGE_KEY);
-      if (stored) return JSON.parse(stored);
-    } catch {}
-    return initial;
-  });
-  const persist = useCallback((next) => {
-    setGalleries(next);
-    try { localStorage.setItem(GALLERY_STORAGE_KEY, JSON.stringify(next)); } catch {}
-  }, []);
-  const reset = useCallback(() => {
-    try { localStorage.removeItem(GALLERY_STORAGE_KEY); } catch {}
-    setGalleries(initial);
-  }, [initial]);
-  return [galleries, persist, reset];
-}
-
-const GALLERIES = [
-  {
-    id: "meghan-desmond",
-    title: "Meghan & Desmond",
-    subtitle: "Wedding · September 2024 · Napa Valley, CA",
-    cover: "https://picsum.photos/seed/wed01/1600/900",
-    coverThumb: "https://picsum.photos/seed/wed01/800/600",
-    date: "September 14, 2024",
-    location: "Napa Valley, CA",
-    sets: [
-      { id: "all", label: "All Photos", photos: makePhotos([101,102,103,104,105,106,107,108,109,110,111,112,113,114,115,116,117,118,119,120,121,122,123,124], "md") },
-      { id: "ceremony", label: "Ceremony", photos: makePhotos([101,103,105,107,109,111,113,115], "mdc") },
-      { id: "reception", label: "Reception", photos: makePhotos([102,104,106,108,110,112,114,116,118,120], "mdr") },
-      { id: "portraits", label: "Portraits", photos: makePhotos([117,119,121,122,123,124], "mdp") },
-    ],
-  },
-  {
-    id: "sarah-james",
-    title: "Sarah & James",
-    subtitle: "Engagement · July 2024 · Marin Headlands, CA",
-    cover: "https://picsum.photos/seed/eng02/1600/900",
-    coverThumb: "https://picsum.photos/seed/eng02/800/600",
-    date: "July 6, 2024",
-    location: "Marin Headlands, CA",
-    sets: [
-      { id: "all", label: "All Photos", photos: makePhotos([201,202,203,204,205,206,207,208,209,210,211,212,213,214,215,216], "sj") },
-      { id: "golden-hour", label: "Golden Hour", photos: makePhotos([201,203,205,207,209,211], "sjg") },
-      { id: "beach", label: "Beach", photos: makePhotos([202,204,206,208,210,212,214,216], "sjb") },
-    ],
-  },
-  {
-    id: "rodriguez-family",
-    title: "Rodriguez Family",
-    subtitle: "Family · October 2024 · Muir Woods, CA",
-    cover: "https://picsum.photos/seed/fam03/1600/900",
-    coverThumb: "https://picsum.photos/seed/fam03/800/600",
-    date: "October 12, 2024",
-    location: "Muir Woods, CA",
-    sets: [
-      { id: "all", label: "All Photos", photos: makePhotos([301,302,303,304,305,306,307,308,309,310,311,312,313,314], "rf") },
-      { id: "kids", label: "Kids", photos: makePhotos([301,303,305,307,309,311], "rfk") },
-      { id: "full-family", label: "Full Family", photos: makePhotos([302,304,306,308,310,312,314], "rff") },
-    ],
-  },
-  {
-    id: "ava-portraits",
-    title: "Ava — Senior Portraits",
-    subtitle: "Portrait · August 2024 · San Francisco, CA",
-    cover: "https://picsum.photos/seed/por04/1600/900",
-    coverThumb: "https://picsum.photos/seed/por04/800/600",
-    date: "August 20, 2024",
-    location: "San Francisco, CA",
-    sets: [
-      { id: "all", label: "All Photos", photos: makePhotos([401,402,403,404,405,406,407,408,409,410,411,412], "av") },
-      { id: "urban", label: "Urban", photos: makePhotos([401,403,405,407,409,411], "avu") },
-      { id: "golden-gate", label: "Golden Gate", photos: makePhotos([402,404,406,408,410,412], "avg") },
-    ],
-  },
-  {
-    id: "chen-wedding",
-    title: "Lily & Marcus",
-    subtitle: "Wedding · May 2024 · Carmel-by-the-Sea, CA",
-    cover: "https://picsum.photos/seed/wed05/1600/900",
-    coverThumb: "https://picsum.photos/seed/wed05/800/600",
-    date: "May 25, 2024",
-    location: "Carmel-by-the-Sea, CA",
-    sets: [
-      { id: "all", label: "All Photos", photos: makePhotos([501,502,503,504,505,506,507,508,509,510,511,512,513,514,515,516,517,518,519,520], "lm") },
-      { id: "ceremony", label: "Ceremony", photos: makePhotos([501,503,505,507,509,511,513,515], "lmc") },
-      { id: "reception", label: "Reception", photos: makePhotos([502,504,506,508,510,512,514,516,518,520], "lmr") },
-      { id: "portraits", label: "Portraits", photos: makePhotos([517,519], "lmp") },
-    ],
-  },
-  {
-    id: "newborn-patel",
-    title: "Baby Patel",
-    subtitle: "Newborn · November 2024 · Studio, San Francisco",
-    cover: "https://picsum.photos/seed/new06/1600/900",
-    coverThumb: "https://picsum.photos/seed/new06/800/600",
-    date: "November 3, 2024",
-    location: "San Francisco Studio",
-    sets: [
-      { id: "all", label: "All Photos", photos: makePhotos([601,602,603,604,605,606,607,608,609,610], "bp") },
-      { id: "baby", label: "Baby", photos: makePhotos([601,603,605,607,609], "bpb") },
-      { id: "family", label: "With Family", photos: makePhotos([602,604,606,608,610], "bpf") },
-    ],
-  },
-];
 
 /* ── Icons ── */
 const Icon = {
@@ -624,10 +520,13 @@ const Icon = {
   chevLeft: () => <svg viewBox="0 0 24 24" style={{width:'100%',height:'100%'}}><polyline points="15 18 9 12 15 6" strokeWidth="1.5"/></svg>,
   chevRight: () => <svg viewBox="0 0 24 24" style={{width:'100%',height:'100%'}}><polyline points="9 18 15 12 9 6" strokeWidth="1.5"/></svg>,
   chevDown: () => <svg viewBox="0 0 24 24" style={{width:'100%',height:'100%'}}><polyline points="6 9 12 15 18 9" strokeWidth="1.5"/></svg>,
-  lock: () => <svg viewBox="0 0 24 24" style={{width:'100%',height:'100%'}}><rect x="3" y="11" width="18" height="11" rx="2" ry="2" strokeWidth="1.5"/><path d="M7 11V7a5 5 0 0 1 10 0v4" strokeWidth="1.5"/></svg>,
-  logout: () => <svg viewBox="0 0 24 24" style={{width:'100%',height:'100%'}}><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" strokeWidth="1.5"/><polyline points="16 17 21 12 16 7" strokeWidth="1.5"/><line x1="21" y1="12" x2="9" y2="12" strokeWidth="1.5"/></svg>,
+  key: () => <svg viewBox="0 0 24 24" style={{width:'100%',height:'100%'}}><circle cx="7.5" cy="15.5" r="5.5" strokeWidth="1.5"/><path d="m21 2-9.6 9.6" strokeWidth="1.5"/><path d="m15.5 7.5 3 3" strokeWidth="1.5"/><path d="m18 5 2 2" strokeWidth="1.5"/></svg>,
   edit: () => <svg viewBox="0 0 24 24" style={{width:'100%',height:'100%'}}><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" strokeWidth="1.5"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" strokeWidth="1.5"/></svg>,
-  info: () => <svg viewBox="0 0 24 24" style={{width:'100%',height:'100%'}}><circle cx="12" cy="12" r="10" strokeWidth="1.5"/><line x1="12" y1="16" x2="12" y2="12" strokeWidth="1.5"/><line x1="12" y1="8" x2="12.01" y2="8" strokeWidth="1.5"/></svg>,
+  plus: () => <svg viewBox="0 0 24 24" style={{width:'100%',height:'100%'}}><line x1="12" y1="5" x2="12" y2="19" strokeWidth="1.5"/><line x1="5" y1="12" x2="19" y2="12" strokeWidth="1.5"/></svg>,
+  trash: () => <svg viewBox="0 0 24 24" style={{width:'100%',height:'100%'}}><polyline points="3 6 5 6 21 6" strokeWidth="1.5"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2" strokeWidth="1.5"/></svg>,
+  logout: () => <svg viewBox="0 0 24 24" style={{width:'100%',height:'100%'}}><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" strokeWidth="1.5"/><polyline points="16 17 21 12 16 7" strokeWidth="1.5"/><line x1="21" y1="12" x2="9" y2="12" strokeWidth="1.5"/></svg>,
+  info: () => <svg viewBox="0 0 24 24" style={{width:'100%',height:'100%'}}><circle cx="12" cy="12" r="10" strokeWidth="1.5"/><line x1="12" y1="8" x2="12" y2="12" strokeWidth="1.5"/><line x1="12" y1="16" x2="12.01" y2="16" strokeWidth="2.5"/></svg>,
+  chevUp: () => <svg viewBox="0 0 24 24" style={{width:'100%',height:'100%'}}><polyline points="18 15 12 9 6 15" strokeWidth="1.5"/></svg>,
 };
 
 /* ── Toast ── */
@@ -636,8 +535,7 @@ function Toast({ msg }) {
 }
 
 /* ── Nav ── */
-function Nav({ view, galleryTitle, onHome, transparent, dark, scrolled, favorites, onToggleFavs,
-              isAdmin, onLoginClick, onLogout }) {
+function Nav({ view, galleryTitle, onHome, transparent, dark, scrolled, favorites, onToggleFavs, isAdmin, onAdminClick, onLogout }) {
   const solidClass = scrolled || !transparent ? 'solid' : '';
   const darkClass = dark && !scrolled ? 'dark' : '';
   return (
@@ -665,175 +563,414 @@ function Nav({ view, galleryTitle, onHome, transparent, dark, scrolled, favorite
             </button>
           </>
         )}
-        {isAdmin ? (
-          <>
-            <span className="admin-badge">Admin</span>
-            <button className="nav-icon" title="Log out of admin" onClick={onLogout}>
+        {isAdmin && <span className="admin-badge">Admin</span>}
+        {isAdmin
+          ? <button className="nav-icon" title="Sign out" onClick={onLogout}>
               <span style={{width:18,height:18,display:'block'}}>{Icon.logout()}</span>
             </button>
-          </>
-        ) : (
-          <button className="admin-login-btn" title="Admin login" onClick={onLoginClick}>
-            <span style={{width:12,height:12,display:'block'}}>{Icon.lock()}</span>
-            <span>Admin</span>
-          </button>
-        )}
+          : <button className="nav-icon" title="Admin login" onClick={onAdminClick}>
+              <span style={{width:18,height:18,display:'block'}}>{Icon.key()}</span>
+            </button>
+        }
       </div>
     </nav>
   );
 }
 
 /* ── Admin Login Modal ── */
-function AdminLoginModal({ onClose, onSubmit }) {
-  const [pw, setPw] = useState('');
+function AdminLoginModal({ onLogin, onClose }) {
+  const [username, setUsername] = useState('');
+  const [password, setPassword] = useState('');
   const [error, setError] = useState('');
-  const inputRef = useRef(null);
-  useEffect(() => { inputRef.current?.focus(); }, []);
-  useEffect(() => {
-    const fn = (e) => { if (e.key === 'Escape') onClose(); };
-    window.addEventListener('keydown', fn);
-    return () => window.removeEventListener('keydown', fn);
-  }, [onClose]);
-  const submit = (e) => {
+  const [loading, setLoading] = useState(false);
+
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!onSubmit(pw)) setError('Incorrect password');
+    setError(''); setLoading(true);
+    const ok = await onLogin(username, password);
+    if (!ok) { setError('Invalid credentials'); setLoading(false); }
   };
+
   return (
-    <div className="modal-backdrop" onClick={onClose}>
+    <div className="modal-overlay" onClick={onClose}>
       <div className="modal" onClick={e => e.stopPropagation()}>
         <div className="modal-header">
           <h2>Admin Login</h2>
-          <button className="modal-close" onClick={onClose}>{Icon.close()}</button>
+          <button className="btn btn-ghost btn-sm" onClick={onClose} style={{padding:'6px'}}>
+            <span style={{width:18,height:18,display:'block'}}>{Icon.close()}</span>
+          </button>
         </div>
-        <form className="modal-body" onSubmit={submit}>
+        <div className="modal-body">
+          <form onSubmit={handleSubmit}>
+            <div className="form-field">
+              <label>Username</label>
+              <input type="text" value={username} autoFocus autoComplete="username"
+                onChange={e => setUsername(e.target.value)} />
+            </div>
+            <div className="form-field">
+              <label>Password</label>
+              <input type="password" value={password} autoComplete="current-password"
+                onChange={e => setPassword(e.target.value)} />
+            </div>
+            {error && <p className="form-error" style={{marginBottom:14}}>{error}</p>}
+            <div className="modal-actions">
+              <button type="button" className="btn btn-secondary" onClick={onClose}>Cancel</button>
+              <button type="submit" className="btn btn-primary" disabled={loading}>
+                {loading ? 'Signing in…' : 'Sign In'}
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* ── Add Photo Form ── */
+function AddPhotoForm({ galleryId, setId, token, onAdded, onCancel }) {
+  const EXIF_BLANK = { camera:'', lens:'', aperture:'', shutter:'', iso:'', focalLength:'' };
+  const [src, setSrc] = useState('');
+  const [thumb, setThumb] = useState('');
+  const [width, setWidth] = useState('1200');
+  const [height, setHeight] = useState('900');
+  const [showExif, setShowExif] = useState(false);
+  const [exif, setExif] = useState(EXIF_BLANK);
+  const [detecting, setDetecting] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState('');
+  const detectTimer = useRef(null);
+
+  const setExifField = (k, v) => setExif(x => ({...x, [k]: v}));
+
+  // Auto-detect dimensions and EXIF when URL is entered
+  const handleSrcChange = (val) => {
+    setSrc(val);
+    clearTimeout(detectTimer.current);
+    if (!val.trim()) return;
+    detectTimer.current = setTimeout(async () => {
+      setDetecting(true);
+      // Detect image dimensions
+      try {
+        await new Promise((resolve) => {
+          const img = new Image();
+          img.onload = () => { setWidth(String(img.naturalWidth || 1200)); setHeight(String(img.naturalHeight || 900)); resolve(); };
+          img.onerror = resolve;
+          img.src = val.trim();
+        });
+      } catch {}
+      // Auto-detect EXIF via exifr if available
+      if (typeof window.exifr !== 'undefined') {
+        try {
+          const fmtShutter = (v) => v ? (v >= 1 ? `${v}s` : `1/${Math.round(1/v)}s`) : '';
+          const d = await window.exifr.parse(val.trim(), { tiff: true, exif: true, gps: false });
+          if (d && Object.keys(d).length > 0) {
+            setShowExif(true);
+            setExif({
+              camera: [d.Make, d.Model].filter(Boolean).join(' ').trim(),
+              lens: d.LensModel || '',
+              aperture: d.FNumber ? `f/${d.FNumber}` : '',
+              shutter: fmtShutter(d.ExposureTime),
+              iso: d.ISO ? String(d.ISO) : '',
+              focalLength: d.FocalLength ? `${Math.round(d.FocalLength)}mm` : '',
+            });
+          }
+        } catch {}
+      }
+      setDetecting(false);
+    }, 600);
+  };
+
+  const handleAdd = async () => {
+    if (!src.trim()) { setError('Photo URL is required'); return; }
+    setSaving(true); setError('');
+    try {
+      const hasExif = Object.values(exif).some(v => v.trim());
+      await apiFetch(
+        `/api/galleries/${galleryId}/sets/${setId}/photos`,
+        { method: 'POST', body: JSON.stringify({ src: src.trim(), thumb: thumb.trim() || src.trim(), width: parseInt(width)||1200, height: parseInt(height)||900, exif: hasExif ? exif : null }) },
+        token
+      );
+      onAdded();
+    } catch (e) { setError(e.message); setSaving(false); }
+  };
+
+  return (
+    <div className="add-photo-form">
+      <h4>Add Photo by URL</h4>
+      <div className="form-field" style={{marginBottom:10}}>
+        <label>
+          Photo URL *
+          {detecting && <span style={{marginLeft:8,opacity:0.5,fontWeight:300,textTransform:'none',letterSpacing:0}}>detecting…</span>}
+        </label>
+        <input type="url" placeholder="https://…" value={src} onChange={e => handleSrcChange(e.target.value)} />
+      </div>
+      <div className="form-field" style={{marginBottom:10}}>
+        <label>Thumbnail URL <span style={{opacity:0.5}}>(optional, defaults to photo URL)</span></label>
+        <input type="url" placeholder="https://…" value={thumb} onChange={e => setThumb(e.target.value)} />
+      </div>
+      <div className="form-row" style={{marginBottom:10}}>
+        <div className="form-field" style={{marginBottom:0}}>
+          <label>Width (px)</label>
+          <input type="number" value={width} onChange={e => setWidth(e.target.value)} />
+        </div>
+        <div className="form-field" style={{marginBottom:0}}>
+          <label>Height (px)</label>
+          <input type="number" value={height} onChange={e => setHeight(e.target.value)} />
+        </div>
+      </div>
+      <button className="exif-toggle" onClick={() => setShowExif(s => !s)}>
+        {showExif ? '▴ Hide EXIF data' : '▾ Add EXIF data (optional)'}
+      </button>
+      {showExif && (
+        <div className="exif-section">
           <div className="form-row">
-            <label>Password</label>
-            <input ref={inputRef} type="password" value={pw}
-              onChange={e => { setPw(e.target.value); setError(''); }}
-              placeholder="Enter admin password" />
-            {error && <div className="form-error">{error}</div>}
-            <p style={{fontSize:11,color:'var(--fg2)',marginTop:10,letterSpacing:'0.04em'}}>
-              Demo password: <code>admin</code>. Edits persist locally in your browser.
-            </p>
+            <div className="form-field" style={{marginBottom:10}}>
+              <label>Camera</label>
+              <input type="text" placeholder="Sony A7 IV" value={exif.camera} onChange={e => setExifField('camera', e.target.value)} />
+            </div>
+            <div className="form-field" style={{marginBottom:10}}>
+              <label>Lens</label>
+              <input type="text" placeholder="85mm f/1.4" value={exif.lens} onChange={e => setExifField('lens', e.target.value)} />
+            </div>
           </div>
-          <div className="btn-row">
-            <button type="button" className="btn-secondary" onClick={onClose}>Cancel</button>
-            <button type="submit" className="btn-primary">Sign in</button>
+          <div className="form-row">
+            <div className="form-field" style={{marginBottom:10}}>
+              <label>Aperture</label>
+              <input type="text" placeholder="f/2.8" value={exif.aperture} onChange={e => setExifField('aperture', e.target.value)} />
+            </div>
+            <div className="form-field" style={{marginBottom:10}}>
+              <label>Shutter Speed</label>
+              <input type="text" placeholder="1/250s" value={exif.shutter} onChange={e => setExifField('shutter', e.target.value)} />
+            </div>
           </div>
-        </form>
+          <div className="form-row">
+            <div className="form-field" style={{marginBottom:0}}>
+              <label>ISO</label>
+              <input type="text" placeholder="400" value={exif.iso} onChange={e => setExifField('iso', e.target.value)} />
+            </div>
+            <div className="form-field" style={{marginBottom:0}}>
+              <label>Focal Length</label>
+              <input type="text" placeholder="85mm" value={exif.focalLength} onChange={e => setExifField('focalLength', e.target.value)} />
+            </div>
+          </div>
+        </div>
+      )}
+      {error && <p className="form-error" style={{marginTop:8}}>{error}</p>}
+      <div style={{display:'flex', gap:8, marginTop:12}}>
+        <button className="btn btn-secondary btn-sm" onClick={onCancel}>Cancel</button>
+        <button className="btn btn-accent btn-sm" onClick={handleAdd} disabled={saving}>
+          {saving ? 'Adding…' : 'Add Photo'}
+        </button>
       </div>
     </div>
   );
 }
 
 /* ── Gallery Editor Modal ── */
-function GalleryEditor({ gallery, isNew, onClose, onSave, onDelete }) {
-  const [draft, setDraft] = useState(() => {
-    if (gallery) return JSON.parse(JSON.stringify(gallery));
-    return {
-      id: uid('gal'),
-      title: '', subtitle: '', cover: '', coverThumb: '',
-      date: '', location: '',
-      sets: [{ id: 'all', label: 'All Photos', photos: [] }],
-    };
-  });
+function GalleryEditorModal({ gallery, token, onSaved, onDeleted, onClose }) {
+  const isNew = !gallery;
+  const blankForm = { id:'', title:'', subtitle:'', cover:'', coverThumb:'', date:'', location:'' };
+  const [form, setForm] = useState(gallery ? {
+    id: gallery.id, title: gallery.title, subtitle: gallery.subtitle,
+    cover: gallery.cover, coverThumb: gallery.coverThumb,
+    date: gallery.date, location: gallery.location,
+  } : blankForm);
+  const [sets, setSets] = useState(gallery ? gallery.sets : []);
+  const [expandedSet, setExpandedSet] = useState(null);
+  const [addingPhotoToSet, setAddingPhotoToSet] = useState(null);
+  const [addSetOpen, setAddSetOpen] = useState(false);
+  const [newSetLabel, setNewSetLabel] = useState('');
+  const [saving, setSaving] = useState(false);
+  const [deleting, setDeleting] = useState(false);
   const [error, setError] = useState('');
 
-  const update = (patch) => setDraft(d => ({ ...d, ...patch }));
+  const setField = (k, v) => setForm(f => ({...f, [k]: v}));
 
-  // Photos are always added to the main "All Photos" set (sets[0]).
-  // Any other sub-sets (e.g. "Ceremony", "Reception") on existing galleries
-  // are preserved untouched.
-  const mainPhotos = draft.sets[0]?.photos || [];
+  const slugify = (s) => s.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
 
-  const addPhoto = async (url, thumbUrl) => {
-    if (!url) return;
-    const probeUrl = thumbUrl || url;
-    const { w, h } = await loadImageDims(probeUrl);
-    const photo = { id: uid('p'), src: url, thumb: thumbUrl || url, w, h };
-    setDraft(d => {
-      const sets = d.sets.length
-        ? d.sets.map((s, i) => i === 0 ? { ...s, photos: [...s.photos, photo] } : s)
-        : [{ id: 'all', label: 'All Photos', photos: [photo] }];
-      return { ...d, sets };
-    });
+  const handleSave = async () => {
+    if (!form.title.trim()) { setError('Title is required'); return; }
+    setSaving(true); setError('');
+    try {
+      const id = isNew ? (slugify(form.title) || `gallery-${Date.now()}`) : form.id;
+      if (isNew) {
+        await apiFetch('/api/galleries', {
+          method: 'POST',
+          body: JSON.stringify({ ...form, id, coverThumb: form.coverThumb || form.cover }),
+        }, token);
+      } else {
+        await apiFetch(`/api/galleries/${id}`, {
+          method: 'PUT',
+          body: JSON.stringify({ ...form, coverThumb: form.coverThumb || form.cover }),
+        }, token);
+      }
+      onSaved();
+    } catch (e) { setError(e.message); setSaving(false); }
   };
 
-  const removePhoto = (photoId) => setDraft(d => ({
-    ...d,
-    sets: d.sets.map((s, i) => i === 0 ? { ...s, photos: s.photos.filter(p => p.id !== photoId) } : s),
-  }));
+  const handleDelete = async () => {
+    if (!confirm(`Delete gallery "${gallery.title}"? This cannot be undone.`)) return;
+    setDeleting(true);
+    try {
+      await apiFetch(`/api/galleries/${gallery.id}`, { method: 'DELETE' }, token);
+      onDeleted();
+    } catch (e) { setError(e.message); setDeleting(false); }
+  };
 
-  const handleSave = () => {
-    if (!draft.title.trim()) { setError('Title is required'); return; }
-    if (!draft.cover.trim()) { setError('Cover image URL is required'); return; }
-    const cleaned = {
-      ...draft,
-      coverThumb: draft.coverThumb || draft.cover,
-      sets: draft.sets.length ? draft.sets : [{ id: 'all', label: 'All Photos', photos: [] }],
-    };
-    onSave(cleaned);
+  const handleDeletePhoto = async (setId, photoId) => {
+    await apiFetch(`/api/galleries/${gallery.id}/sets/${setId}/photos/${photoId}`, { method: 'DELETE' }, token);
+    setSets(prev => prev.map(s => s.id === setId ? {...s, photos: s.photos.filter(p => p.id !== photoId)} : s));
+  };
+
+  const handleAddSet = async () => {
+    if (!newSetLabel.trim()) return;
+    const id = slugify(newSetLabel) || `set-${Date.now()}`;
+    await apiFetch(`/api/galleries/${gallery.id}/sets`, {
+      method: 'POST', body: JSON.stringify({ id, label: newSetLabel.trim() }),
+    }, token);
+    setSets(prev => [...prev, { id, label: newSetLabel.trim(), photos: [] }]);
+    setNewSetLabel(''); setAddSetOpen(false);
+  };
+
+  const handleDeleteSet = async (setId) => {
+    if (!confirm('Delete this set and all its photos?')) return;
+    await apiFetch(`/api/galleries/${gallery.id}/sets/${setId}`, { method: 'DELETE' }, token);
+    setSets(prev => prev.filter(s => s.id !== setId));
+    if (expandedSet === setId) setExpandedSet(null);
+  };
+
+  const handlePhotoAdded = async (setId) => {
+    // Refetch the specific gallery to get updated photo list
+    const galleries = await apiFetch('/api/galleries');
+    const updated = galleries.find(g => g.id === gallery.id);
+    if (updated) setSets(updated.sets);
+    setAddingPhotoToSet(null);
   };
 
   return (
-    <div className="modal-backdrop" onClick={onClose}>
-      <div className="modal" style={{maxWidth: 720}} onClick={e => e.stopPropagation()}>
+    <div className="modal-overlay" onClick={onClose}>
+      <div className="modal modal-wide" onClick={e => e.stopPropagation()}>
         <div className="modal-header">
           <h2>{isNew ? 'New Gallery' : 'Edit Gallery'}</h2>
-          <button className="modal-close" onClick={onClose}>{Icon.close()}</button>
+          <button className="btn btn-ghost btn-sm" onClick={onClose} style={{padding:'6px'}}>
+            <span style={{width:18,height:18,display:'block'}}>{Icon.close()}</span>
+          </button>
         </div>
         <div className="modal-body">
-          <div className="form-row">
+          {/* Metadata fields */}
+          <div className="form-field">
             <label>Title *</label>
-            <input type="text" value={draft.title} onChange={e => update({title: e.target.value})} placeholder="e.g. Sarah & James" />
+            <input type="text" value={form.title} onChange={e => setField('title', e.target.value)} placeholder="Meghan & Desmond" />
+          </div>
+          <div className="form-field">
+            <label>Subtitle / Category Line</label>
+            <input type="text" value={form.subtitle} onChange={e => setField('subtitle', e.target.value)} placeholder="Wedding · June 2025 · Napa Valley, CA" />
           </div>
           <div className="form-row">
-            <label>Subtitle</label>
-            <input type="text" value={draft.subtitle} onChange={e => update({subtitle: e.target.value})} placeholder="e.g. Engagement · July 2024 · Marin Headlands, CA" />
-          </div>
-          <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:14}}>
-            <div className="form-row">
+            <div className="form-field">
               <label>Date</label>
-              <input type="text" value={draft.date} onChange={e => update({date: e.target.value})} placeholder="July 6, 2024" />
+              <input type="text" value={form.date} onChange={e => setField('date', e.target.value)} placeholder="June 14, 2025" />
             </div>
-            <div className="form-row">
+            <div className="form-field">
               <label>Location</label>
-              <input type="text" value={draft.location} onChange={e => update({location: e.target.value})} placeholder="Marin Headlands, CA" />
+              <input type="text" value={form.location} onChange={e => setField('location', e.target.value)} placeholder="Napa Valley, CA" />
             </div>
           </div>
-          <div className="form-row">
-            <label>Cover Image URL *</label>
-            <input type="url" value={draft.cover} onChange={e => update({cover: e.target.value, coverThumb: draft.coverThumb || e.target.value})} placeholder="https://..." />
+          <div className="form-field">
+            <label>Cover Image URL</label>
+            <input type="url" value={form.cover} onChange={e => setField('cover', e.target.value)} placeholder="https://…/cover.jpg" />
           </div>
-          <div className="form-row">
-            <label>Cover Thumbnail URL (optional)</label>
-            <input type="url" value={draft.coverThumb} onChange={e => update({coverThumb: e.target.value})} placeholder="Defaults to cover URL" />
-          </div>
-
-          <div style={{marginTop:24,marginBottom:10}}>
-            <label style={{fontSize:11,letterSpacing:'0.1em',textTransform:'uppercase',color:'var(--fg2)'}}>
-              Photos <span style={{color:'var(--fg3)',marginLeft:6,letterSpacing:'0.04em',textTransform:'none'}}>
-                ({mainPhotos.length})
-              </span>
-            </label>
+          <div className="form-field">
+            <label>Cover Thumbnail URL <span style={{opacity:0.5}}>(optional, defaults to cover URL)</span></label>
+            <input type="url" value={form.coverThumb} onChange={e => setField('coverThumb', e.target.value)} placeholder="https://…/cover-thumb.jpg" />
           </div>
 
-          <PhotoListEditor
-            photos={mainPhotos}
-            onAddPhoto={addPhoto}
-            onRemovePhoto={removePhoto}
-          />
+          {/* Sets manager — only shown when editing existing gallery */}
+          {!isNew && sets.length > 0 && (
+            <div style={{marginTop:8}}>
+              <div style={{fontSize:10,letterSpacing:'0.14em',textTransform:'uppercase',color:'var(--fg2)',marginBottom:10}}>
+                Photo Sets
+              </div>
+              <div className="set-list">
+                {sets.map(s => (
+                  <div key={s.id} className="set-item">
+                    <div className="set-item-header" onClick={() => setExpandedSet(expandedSet === s.id ? null : s.id)}>
+                      <span style={{width:12,height:12,display:'block',flexShrink:0}}>
+                        {expandedSet === s.id ? Icon.chevUp() : Icon.chevDown()}
+                      </span>
+                      <span>{s.label}</span>
+                      <small>{s.photos.length} photos</small>
+                      {s.id !== 'all' && (
+                        <button className="btn btn-ghost btn-sm" style={{padding:'2px 6px',marginLeft:4}}
+                          onClick={e => { e.stopPropagation(); handleDeleteSet(s.id); }}>
+                          <span style={{width:13,height:13,display:'block'}}>{Icon.trash()}</span>
+                        </button>
+                      )}
+                    </div>
+                    {expandedSet === s.id && (
+                      <div className="set-item-body">
+                        {s.photos.length > 0 && (
+                          <div className="photo-thumb-grid">
+                            {s.photos.map(p => (
+                              <div key={p.id} className="photo-thumb-item">
+                                <img src={p.thumb || p.src} alt="" />
+                                <div className="photo-thumb-del">
+                                  <button onClick={() => handleDeletePhoto(s.id, p.id)} title="Remove photo">
+                                    <span style={{width:18,height:18,display:'block'}}>{Icon.trash()}</span>
+                                  </button>
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        )}
+                        {addingPhotoToSet === s.id
+                          ? <AddPhotoForm galleryId={gallery.id} setId={s.id} token={token}
+                              onAdded={() => handlePhotoAdded(s.id)} onCancel={() => setAddingPhotoToSet(null)} />
+                          : <button className="btn btn-secondary btn-sm" onClick={() => setAddingPhotoToSet(s.id)}>
+                              <span style={{width:12,height:12,display:'block'}}>{Icon.plus()}</span>
+                              Add Photo
+                            </button>
+                        }
+                      </div>
+                    )}
+                  </div>
+                ))}
+              </div>
 
-          {error && <div className="form-error">{error}</div>}
+              {/* Add new set */}
+              {addSetOpen
+                ? <div style={{display:'flex',gap:8,alignItems:'flex-end',marginTop:8}}>
+                    <div className="form-field" style={{flex:1,marginBottom:0}}>
+                      <label>Set Name</label>
+                      <input type="text" value={newSetLabel} onChange={e => setNewSetLabel(e.target.value)}
+                        placeholder="e.g. Ceremony" onKeyDown={e => e.key === 'Enter' && handleAddSet()} autoFocus />
+                    </div>
+                    <button className="btn btn-secondary btn-sm" onClick={() => { setAddSetOpen(false); setNewSetLabel(''); }}>Cancel</button>
+                    <button className="btn btn-accent btn-sm" onClick={handleAddSet}>Add</button>
+                  </div>
+                : <button className="btn btn-secondary btn-sm" style={{marginTop:8}} onClick={() => setAddSetOpen(true)}>
+                    <span style={{width:12,height:12,display:'block'}}>{Icon.plus()}</span>
+                    Add Set
+                  </button>
+              }
+            </div>
+          )}
 
-          <div className="btn-row">
-            {!isNew && onDelete && (
-              <button className="btn-danger" onClick={() => {
-                if (window.confirm(`Delete gallery "${draft.title}"? This cannot be undone.`)) onDelete();
-              }} style={{marginRight:'auto'}}>Delete Gallery</button>
+          {error && <p className="form-error" style={{marginTop:14}}>{error}</p>}
+
+          <div className={`modal-actions ${!isNew ? 'modal-actions-split' : ''}`}>
+            {!isNew && (
+              <button className="btn btn-danger" onClick={handleDelete} disabled={deleting}>
+                <span style={{width:13,height:13,display:'block'}}>{Icon.trash()}</span>
+                {deleting ? 'Deleting…' : 'Delete Gallery'}
+              </button>
             )}
-            <button className="btn-secondary" onClick={onClose}>Cancel</button>
-            <button className="btn-primary" onClick={handleSave}>Save</button>
+            <div style={{display:'flex',gap:10}}>
+              <button className="btn btn-secondary" onClick={onClose}>Cancel</button>
+              <button className="btn btn-primary" onClick={handleSave} disabled={saving}>
+                {saving ? 'Saving…' : (isNew ? 'Create Gallery' : 'Save Changes')}
+              </button>
+            </div>
           </div>
         </div>
       </div>
@@ -841,148 +978,178 @@ function GalleryEditor({ gallery, isNew, onClose, onSave, onDelete }) {
   );
 }
 
-function PhotoListEditor({ photos, onAddPhoto, onRemovePhoto }) {
-  const [url, setUrl] = useState('');
-  const [thumb, setThumb] = useState('');
-  const [busy, setBusy] = useState(false);
-  const [err, setErr] = useState('');
+/* ── Admin Drawer ── */
+function AdminDrawer({ galleries, token, onRefresh, onClose, showToast }) {
+  const [editing, setEditing] = useState(null);   // gallery object or 'new'
+  const [search, setSearch] = useState('');
 
-  const submit = async (e) => {
-    if (e) e.preventDefault();
-    const u = url.trim();
-    if (!u) return;
-    setBusy(true); setErr('');
-    try {
-      await onAddPhoto(u, thumb.trim());
-      setUrl(''); setThumb('');
-    } catch (ex) {
-      setErr('Failed to add photo');
-    } finally {
-      setBusy(false);
-    }
+  const filtered = galleries.filter(g =>
+    g.title.toLowerCase().includes(search.toLowerCase())
+  );
+
+  const handleSaved = async () => {
+    await onRefresh();
+    setEditing(null);
+    showToast('Gallery saved');
+  };
+
+  const handleDeleted = async () => {
+    await onRefresh();
+    setEditing(null);
+    showToast('Gallery deleted');
   };
 
   return (
-    <div className="set-block">
-      {photos.length > 0 && (
-        <div className="photo-edit-list">
-          {photos.map(p => (
-            <div key={p.id} className="photo-edit-item">
-              <img src={p.thumb} alt="" loading="lazy" />
-              <button type="button" className="photo-edit-remove" title="Remove photo"
-                onClick={() => onRemovePhoto(p.id)}>×</button>
-            </div>
-          ))}
+    <>
+      <div className="admin-drawer">
+        <div className="admin-drawer-overlay" onClick={onClose} />
+        <div className="admin-drawer-panel">
+          <div className="admin-drawer-header">
+            <h2>Gallery Manager</h2>
+            <button className="btn btn-ghost btn-sm" style={{padding:'6px'}} onClick={onClose}>
+              <span style={{width:18,height:18,display:'block'}}>{Icon.close()}</span>
+            </button>
+          </div>
+          <div className="admin-drawer-body">
+            <button className="btn btn-primary btn-full" style={{marginBottom:18}}
+              onClick={() => setEditing('new')}>
+              <span style={{width:13,height:13,display:'block'}}>{Icon.plus()}</span>
+              New Gallery
+            </button>
+            {galleries.length > 5 && (
+              <div className="form-field" style={{marginBottom:14}}>
+                <input type="search" placeholder="Search galleries…" value={search}
+                  onChange={e => setSearch(e.target.value)} />
+              </div>
+            )}
+            {filtered.map(g => (
+              <div key={g.id} className="admin-gallery-item">
+                {g.coverThumb
+                  ? <img src={g.coverThumb} alt={g.title} className="admin-gallery-thumb" />
+                  : <div className="admin-gallery-thumb skeleton" />
+                }
+                <div className="admin-gallery-info">
+                  <h4>{g.title}</h4>
+                  <p>{g.sets[0]?.photos.length ?? 0} photos &nbsp;·&nbsp; {g.sets.length} sets</p>
+                </div>
+                <button className="btn btn-secondary btn-sm" onClick={() => setEditing(g)}>
+                  <span style={{width:12,height:12,display:'block'}}>{Icon.edit()}</span>
+                  Edit
+                </button>
+              </div>
+            ))}
+            {filtered.length === 0 && (
+              <p style={{color:'var(--fg3)',fontSize:13,textAlign:'center',padding:'32px 0'}}>No galleries found</p>
+            )}
+          </div>
         </div>
+      </div>
+
+      {editing && (
+        <GalleryEditorModal
+          gallery={editing === 'new' ? null : editing}
+          token={token}
+          onSaved={handleSaved}
+          onDeleted={handleDeleted}
+          onClose={() => setEditing(null)}
+        />
       )}
-      <form className="photo-add-row" onSubmit={submit}>
-        <input type="url" placeholder="Photo URL (https://...)" value={url}
-          onChange={e => setUrl(e.target.value)} disabled={busy} />
-        <input type="url" placeholder="Thumbnail URL (optional)" value={thumb}
-          onChange={e => setThumb(e.target.value)} style={{maxWidth:200}} disabled={busy} />
-        <button type="submit" className="btn-secondary" style={{whiteSpace:'nowrap'}} disabled={busy}>
-          {busy ? 'Adding…' : '+ Add'}
-        </button>
-      </form>
-      {err && <div className="form-error">{err}</div>}
-    </div>
+    </>
   );
 }
 
 /* ── EXIF Panel ── */
-function ExifPanel({ src }) {
-  const [data, setData] = useState(null);
-  const [status, setStatus] = useState('loading');
+function ExifPanel({ photo, onClose }) {
+  const stored = photo.exif;
+  const [liveRows, setLiveRows] = useState(null);
+  const [liveStatus, setLiveStatus] = useState('idle'); // idle | loading | done | error
+
+  // If no stored EXIF, attempt live detection via exifr
   useEffect(() => {
-    let cancelled = false;
-    setStatus('loading'); setData(null);
-    if (typeof window.exifr === 'undefined') {
-      setStatus('error');
-      return;
-    }
-    window.exifr.parse(src, { tiff: true, exif: true, gps: false })
+    if (stored) return;
+    if (typeof window.exifr === 'undefined') { setLiveStatus('error'); return; }
+    setLiveStatus('loading');
+    const fmtShutter = (v) => v ? (v >= 1 ? `${v}s` : `1/${Math.round(1/v)}s`) : null;
+    window.exifr.parse(photo.src, { tiff: true, exif: true, gps: false })
       .then(d => {
-        if (cancelled) return;
-        if (!d || Object.keys(d).length === 0) setStatus('empty');
-        else { setData(d); setStatus('ok'); }
+        if (!d || Object.keys(d).length === 0) { setLiveStatus('done'); setLiveRows([]); return; }
+        const rows = [];
+        const camera = [d.Make, d.Model].filter(Boolean).join(' ').trim();
+        if (camera) rows.push(['Camera', camera]);
+        if (d.LensModel) rows.push(['Lens', d.LensModel]);
+        if (d.FocalLength) rows.push(['Focal Length', `${Math.round(d.FocalLength)}mm`]);
+        if (d.FNumber) rows.push(['Aperture', `f/${d.FNumber}`]);
+        const shutter = fmtShutter(d.ExposureTime);
+        if (shutter) rows.push(['Shutter', shutter]);
+        if (d.ISO) rows.push(['ISO', String(d.ISO)]);
+        setLiveRows(rows);
+        setLiveStatus('done');
       })
-      .catch(() => { if (!cancelled) setStatus('error'); });
-    return () => { cancelled = true; };
-  }, [src]);
+      .catch(() => setLiveStatus('error'));
+  }, [photo.src, stored]);
 
-  const fmtShutter = (v) => {
-    if (!v) return null;
-    if (v >= 1) return `${v}s`;
-    return `1/${Math.round(1 / v)}s`;
-  };
-  const fmtDate = (d) => {
-    if (!d) return null;
-    try { return new Date(d).toLocaleString(); } catch { return String(d); }
-  };
+  const storedFields = stored
+    ? [
+        { label: 'Camera',       value: stored.camera },
+        { label: 'Lens',         value: stored.lens },
+        { label: 'Aperture',     value: stored.aperture },
+        { label: 'Shutter',      value: stored.shutter },
+        { label: 'ISO',          value: stored.iso },
+        { label: 'Focal Length', value: stored.focalLength },
+      ].filter(f => f.value)
+    : [];
 
-  const rows = [];
-  if (data) {
-    const camera = [data.Make, data.Model].filter(Boolean).join(' ').trim();
-    if (camera) rows.push(['Camera', camera]);
-    if (data.LensModel) rows.push(['Lens', data.LensModel]);
-    if (data.FocalLength) rows.push(['Focal', `${Math.round(data.FocalLength)}mm`]);
-    if (data.FNumber) rows.push(['Aperture', `f/${data.FNumber}`]);
-    const shutter = fmtShutter(data.ExposureTime);
-    if (shutter) rows.push(['Shutter', shutter]);
-    if (data.ISO) rows.push(['ISO', data.ISO]);
-    const date = fmtDate(data.DateTimeOriginal || data.CreateDate);
-    if (date) rows.push(['Taken', date]);
-    if (data.ImageWidth && data.ImageHeight) rows.push(['Dimensions', `${data.ImageWidth} × ${data.ImageHeight}`]);
-  }
+  const rows = stored
+    ? storedFields.map(f => [f.label, f.value])
+    : (liveRows || []);
 
   return (
-    <div className="exif-panel" onClick={e => e.stopPropagation()}>
-      <h4>EXIF</h4>
-      {status === 'loading' && <div className="empty">Reading metadata…</div>}
-      {status === 'error' && <div className="empty">Couldn't read EXIF (CORS or unsupported source)</div>}
-      {status === 'empty' && <div className="empty">No EXIF data in this image</div>}
-      {status === 'ok' && rows.length === 0 && <div className="empty">No common EXIF tags found</div>}
-      {status === 'ok' && rows.map(([k, v]) => (
-        <div className="row" key={k}>
-          <span className="k">{k}</span>
-          <span>{v}</span>
-        </div>
-      ))}
+    <div className="lb-exif-panel" onClick={e => e.stopPropagation()}>
+      <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',marginBottom: rows.length ? 14 : 8}}>
+        <span className="lb-exif-title">EXIF Data</span>
+        <button onClick={onClose} style={{background:'none',border:'none',cursor:'pointer',color:'rgba(255,255,255,0.4)',display:'flex',padding:'2px'}}>
+          <span style={{width:14,height:14,display:'block'}}>{Icon.close()}</span>
+        </button>
+      </div>
+      {!stored && liveStatus === 'loading' && <p className="exif-empty">Reading metadata…</p>}
+      {!stored && liveStatus === 'error' && <p className="exif-empty">Couldn't read EXIF (CORS or unsupported source)</p>}
+      {rows.length > 0
+        ? <div className="exif-grid">
+            {rows.map(([label, value]) => (
+              <div key={label}>
+                <div className="exif-row-label">{label}</div>
+                <div className="exif-row-value">{value}</div>
+              </div>
+            ))}
+          </div>
+        : (liveStatus === 'done' || stored) && <p className="exif-empty">No EXIF data — add via Admin Panel</p>
+      }
     </div>
   );
 }
 
 /* ── Lightbox ── */
 function Lightbox({ photos, index, liked, onClose, onPrev, onNext, onLike, isAdmin }) {
-  const photo = photos[index];
   const [showExif, setShowExif] = useState(false);
+  const photo = photos[index];
+
+  useEffect(() => { setShowExif(false); }, [index]);
+
   useEffect(() => {
     const fn = (e) => {
       if (e.key === 'ArrowLeft') onPrev();
       if (e.key === 'ArrowRight') onNext();
       if (e.key === 'Escape') onClose();
-      if (e.key === 'i' || e.key === 'I') { if (isAdmin) setShowExif(s => !s); }
     };
     window.addEventListener('keydown', fn);
     return () => window.removeEventListener('keydown', fn);
-  }, [onPrev, onNext, onClose, isAdmin]);
+  }, [onPrev, onNext, onClose]);
 
   return (
     <div className="lightbox" onClick={onClose}>
       <button className="lb-close" onClick={onClose}>
         <span style={{width:18,height:18,display:'block'}}>{Icon.close()}</span>
       </button>
-      {isAdmin && (
-        <button className={`exif-toggle ${showExif ? 'active' : ''}`}
-          onClick={e => { e.stopPropagation(); setShowExif(s => !s); }}
-          title="Toggle EXIF data (i)">
-          <span style={{display:'inline-flex',alignItems:'center',gap:6}}>
-            <span style={{width:14,height:14,display:'inline-block'}}>{Icon.info()}</span>
-            EXIF
-          </span>
-        </button>
-      )}
-      {isAdmin && showExif && <ExifPanel src={photo.src} />}
       {index > 0 && (
         <button className="lb-arrow lb-prev" onClick={e => { e.stopPropagation(); onPrev(); }}>
           <span style={{width:20,height:20,display:'block'}}>{Icon.chevLeft()}</span>
@@ -994,6 +1161,9 @@ function Lightbox({ photos, index, liked, onClose, onPrev, onNext, onLike, isAdm
           <span style={{width:20,height:20,display:'block'}}>{Icon.chevRight()}</span>
         </button>
       )}
+
+      {showExif && <ExifPanel photo={photo} onClose={() => setShowExif(false)} />}
+
       <div className="lb-meta" onClick={e => e.stopPropagation()}>
         <span>{index + 1} / {photos.length}</span>
         <button className={`lb-heart ${liked ? 'liked' : ''}`} onClick={() => onLike(photo.id)}>
@@ -1004,6 +1174,12 @@ function Lightbox({ photos, index, liked, onClose, onPrev, onNext, onLike, isAdm
           <span style={{width:16,height:16,display:'block'}}>{Icon.download()}</span>
           <span>Download</span>
         </button>
+        {isAdmin && (
+          <button className={`lb-heart ${showExif ? 'liked' : ''}`} onClick={() => setShowExif(s => !s)} title="Toggle EXIF data">
+            <span style={{width:16,height:16,display:'block'}}>{Icon.info()}</span>
+            <span>EXIF</span>
+          </button>
+        )}
       </div>
     </div>
   );
@@ -1015,12 +1191,9 @@ function PhotoGrid({ photos, likedIds, onPhotoClick, onLike }) {
     <div className="photo-grid">
       {photos.map((photo, i) => {
         const isLiked = likedIds.has(photo.id);
-        const imgStyle = photo.w && photo.h
-          ? { aspectRatio: `${photo.w} / ${photo.h}` }
-          : undefined;
         return (
           <div key={photo.id} className="photo-item" onClick={() => onPhotoClick(i)}>
-            <img src={photo.thumb} alt="" loading="lazy" style={imgStyle} />
+            <img src={photo.thumb} alt="" loading="lazy" style={{ aspectRatio: photo.w + '/' + photo.h }} />
             <div className="photo-item-overlay">
               <button className={`heart-btn ${isLiked ? 'liked' : ''}`}
                 onClick={e => { e.stopPropagation(); onLike(photo.id); }}>
@@ -1035,8 +1208,7 @@ function PhotoGrid({ photos, likedIds, onPhotoClick, onLike }) {
 }
 
 /* ── Gallery View ── */
-function GalleryView({ gallery, likedIds, onLike, onBack, showToast, heroHeight, navStyle,
-                       isAdmin, onLoginClick, onLogout, onEditGallery }) {
+function GalleryView({ gallery, likedIds, onLike, onBack, showToast, heroHeight, navStyle, isAdmin, adminToken, onRefresh }) {
   const [activeSet, setActiveSet] = useState('all');
   const [lightbox, setLightbox] = useState(null);
   const [showFavs, setShowFavs] = useState(false);
@@ -1070,11 +1242,8 @@ function GalleryView({ gallery, likedIds, onLike, onBack, showToast, heroHeight,
         favorites={showFavs}
         onToggleFavs={() => setShowFavs(f => !f)}
         isAdmin={isAdmin}
-        onLoginClick={onLoginClick}
-        onLogout={onLogout}
       />
 
-      {/* Hero */}
       <div className="gallery-hero" style={{height: heroH}}>
         <img src={gallery.cover} alt={gallery.title} />
         <div className="gallery-hero-overlay" />
@@ -1088,7 +1257,6 @@ function GalleryView({ gallery, likedIds, onLike, onBack, showToast, heroHeight,
         </div>
       </div>
 
-      {/* Sets nav */}
       {gallery.sets.length > 1 && (
         <div className="sets-nav">
           {gallery.sets.map(s => (
@@ -1100,22 +1268,13 @@ function GalleryView({ gallery, likedIds, onLike, onBack, showToast, heroHeight,
         </div>
       )}
 
-      {/* Back / Edit */}
-      <div style={{padding:'20px 24px 4px',display:'flex',justifyContent:'space-between',alignItems:'center'}}>
+      <div style={{padding:'20px 24px 4px'}}>
         <button className="back-btn" onClick={onBack}>
           <span style={{width:14,height:14,display:'block'}}>{Icon.chevLeft()}</span>
           All Galleries
         </button>
-        {isAdmin && onEditGallery && (
-          <button className="btn-secondary" onClick={() => onEditGallery(gallery)}
-            style={{display:'flex',alignItems:'center',gap:6,padding:'8px 14px'}}>
-            <span style={{width:14,height:14,display:'block'}}>{Icon.edit()}</span>
-            Edit Gallery
-          </button>
-        )}
       </div>
 
-      {/* Favorites empty state */}
       {showFavs && photos.length === 0 && (
         <div style={{textAlign:'center',padding:'80px 32px',color:'var(--fg2)'}}>
           <p style={{fontFamily:'var(--serif)',fontSize:22,marginBottom:8}}>No favorites yet</p>
@@ -1135,7 +1294,7 @@ function GalleryView({ gallery, likedIds, onLike, onBack, showToast, heroHeight,
         <p>© {new Date().getFullYear()} {PHOTOGRAPHER} &nbsp;·&nbsp; All rights reserved</p>
       </div>
 
-      {lightbox !== null && photos[lightbox] && (
+      {lightbox !== null && (
         <Lightbox
           photos={photos}
           index={lightbox}
@@ -1155,7 +1314,7 @@ function GalleryView({ gallery, likedIds, onLike, onBack, showToast, heroHeight,
 }
 
 /* ── Home View ── */
-function HomeView({ galleries, onSelectGallery, isAdmin, onLoginClick, onLogout, onEditGallery, onNewGallery }) {
+function HomeView({ galleries, onSelectGallery, isAdmin, onEditGallery, onNewGallery }) {
   const [scrolled, setScrolled] = useState(false);
   useEffect(() => {
     const fn = () => setScrolled(window.scrollY > 10);
@@ -1165,11 +1324,16 @@ function HomeView({ galleries, onSelectGallery, isAdmin, onLoginClick, onLogout,
 
   return (
     <div>
-      <Nav view="home" onHome={() => {}} transparent={false} scrolled={true}
-        isAdmin={isAdmin} onLoginClick={onLoginClick} onLogout={onLogout} />
+      <Nav view="home" onHome={() => {}} transparent={false} scrolled={true} isAdmin={isAdmin} />
       <div className="home-header">
         <h1>{PHOTOGRAPHER}</h1>
         <p>Photography &nbsp;·&nbsp; San Francisco, CA</p>
+        {isAdmin && (
+          <button className="btn btn-accent" style={{marginTop:20}} onClick={onNewGallery}>
+            <span style={{width:13,height:13,display:'block'}}>{Icon.plus()}</span>
+            New Gallery
+          </button>
+        )}
       </div>
       <div className="gallery-grid">
         {galleries.map(g => (
@@ -1179,21 +1343,17 @@ function HomeView({ galleries, onSelectGallery, isAdmin, onLoginClick, onLogout,
               <div className="gallery-card-title">{g.title}</div>
               <div className="gallery-card-meta">{g.subtitle}</div>
             </div>
-            <div className="gallery-card-count">{(g.sets[0]?.photos.length) ?? 0} photos</div>
+            <div className="gallery-card-count">{g.sets[0]?.photos.length ?? 0} photos</div>
             {isAdmin && (
-              <button className="gallery-card-edit"
-                onClick={e => { e.stopPropagation(); onEditGallery(g); }}>
-                Edit
-              </button>
+              <div className="gallery-card-edit">
+                <button onClick={e => { e.stopPropagation(); onEditGallery(g); }}>
+                  <svg viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" strokeWidth="1.5"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" strokeWidth="1.5"/></svg>
+                  Edit
+                </button>
+              </div>
             )}
           </div>
         ))}
-        {isAdmin && (
-          <div className="new-gallery-card" onClick={onNewGallery}>
-            <span className="plus">+</span>
-            <span className="label">New Gallery</span>
-          </div>
-        )}
       </div>
       <div className="gallery-footer">
         <p>© {new Date().getFullYear()} {PHOTOGRAPHER} Photography</p>
@@ -1205,7 +1365,10 @@ function HomeView({ galleries, onSelectGallery, isAdmin, onLoginClick, onLogout,
 /* ── App ── */
 function App() {
   const [view, setView] = useState('home');
-  const [activeGalleryId, setActiveGalleryId] = useState(null);
+  const [activeGallery, setActiveGallery] = useState(null);
+  const [galleries, setGalleries] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState(null);
   const [likedIds, setLikedIds] = useState(() => {
     try { return new Set(JSON.parse(localStorage.getItem('gallery_liked') || '[]')); }
     catch { return new Set(); }
@@ -1213,25 +1376,13 @@ function App() {
   const [toast, setToast] = useState(null);
   const toastTimer = useRef(null);
   const [tweaks, setTweak] = useTweaks(TWEAK_DEFAULTS);
-  const [galleries, setGalleries] = useGalleries(GALLERIES);
-  const { isAdmin, login, logout } = useAdmin();
-  const [showLogin, setShowLogin] = useState(false);
-  const [editing, setEditing] = useState(null); // { gallery, isNew }
 
-  const activeGallery = activeGalleryId
-    ? galleries.find(g => g.id === activeGalleryId) || null
-    : null;
-
-  useEffect(() => {
-    if (view === 'gallery' && activeGalleryId && !activeGallery) {
-      setView('home');
-      setActiveGalleryId(null);
-    }
-  }, [view, activeGalleryId, activeGallery]);
-
-  useEffect(() => {
-    if (!isAdmin && editing) setEditing(null);
-  }, [isAdmin, editing]);
+  // Admin state — token stored in sessionStorage survives page refresh
+  const [adminToken, setAdminToken] = useState(() => sessionStorage.getItem('gallery_admin_token') || null);
+  const isAdmin = !!adminToken;
+  const [showAdminLogin, setShowAdminLogin] = useState(false);
+  const [showAdminPanel, setShowAdminPanel] = useState(false);
+  const [editingGallery, setEditingGallery] = useState(null); // null | 'new' | gallery object
 
   useEffect(() => {
     document.documentElement.style.setProperty('--accent', tweaks.accentColor);
@@ -1246,6 +1397,63 @@ function App() {
     toastTimer.current = setTimeout(() => setToast(null), 2200);
   }, []);
 
+  // Fetch galleries from API
+  const fetchGalleries = useCallback(async () => {
+    try {
+      const data = await apiFetch('/api/galleries');
+      setGalleries(data);
+      // If we're in a gallery view, refresh the active gallery object too
+      setActiveGallery(prev => prev ? (data.find(g => g.id === prev.id) || prev) : null);
+      setLoadError(null);
+    } catch (e) {
+      setLoadError('Could not connect to the gallery server. Make sure the server is running.');
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  useEffect(() => { fetchGalleries(); }, []);
+
+  // Admin auth
+  const handleLogin = useCallback(async (username, password) => {
+    try {
+      const { token } = await apiFetch('/api/auth/login', {
+        method: 'POST', body: JSON.stringify({ username, password }),
+      });
+      sessionStorage.setItem('gallery_admin_token', token);
+      setAdminToken(token);
+      setShowAdminLogin(false);
+      showToast('Signed in as admin');
+      return true;
+    } catch {
+      return false;
+    }
+  }, [showToast]);
+
+  const handleLogout = useCallback(async () => {
+    if (adminToken) {
+      try { await apiFetch('/api/auth/logout', { method: 'POST' }, adminToken); } catch {}
+    }
+    sessionStorage.removeItem('gallery_admin_token');
+    setAdminToken(null);
+    setShowAdminPanel(false);
+    showToast('Signed out');
+  }, [adminToken, showToast]);
+
+  const handleAdminSaved = useCallback(async () => {
+    await fetchGalleries();
+    setEditingGallery(null);
+    showToast('Gallery saved');
+  }, [fetchGalleries, showToast]);
+
+  const handleAdminDeleted = useCallback(async () => {
+    await fetchGalleries();
+    setEditingGallery(null);
+    showToast('Gallery deleted');
+    setView('home');
+    setActiveGallery(null);
+  }, [fetchGalleries, showToast]);
+
   const toggleLike = useCallback((id) => {
     setLikedIds(prev => {
       const next = new Set(prev);
@@ -1256,49 +1464,33 @@ function App() {
   }, []);
 
   const selectGallery = useCallback((g) => {
-    setActiveGalleryId(g.id);
+    setActiveGallery(g);
     setView('gallery');
     window.scrollTo(0, 0);
   }, []);
 
   const goHome = useCallback(() => {
     setView('home');
-    setActiveGalleryId(null);
+    setActiveGallery(null);
     window.scrollTo(0, 0);
   }, []);
 
-  const handleLogin = useCallback((pw) => {
-    if (login(pw)) { setShowLogin(false); showToast('Signed in as admin'); return true; }
-    return false;
-  }, [login, showToast]);
+  if (loading) {
+    return (
+      <div className="loading-screen">
+        <div className="loading-spinner" />
+        <p>Loading galleries</p>
+      </div>
+    );
+  }
 
-  const handleLogout = useCallback(() => {
-    logout();
-    showToast('Signed out');
-  }, [logout, showToast]);
-
-  const startEditGallery = useCallback((g) => setEditing({ gallery: g, isNew: false }), []);
-  const startNewGallery = useCallback(() => setEditing({ gallery: null, isNew: true }), []);
-
-  const saveGallery = useCallback((draft) => {
-    setGalleries((() => {
-      const exists = galleries.some(g => g.id === draft.id);
-      return exists
-        ? galleries.map(g => g.id === draft.id ? draft : g)
-        : [...galleries, draft];
-    })());
-    setEditing(null);
-    showToast(editing?.isNew ? 'Gallery created' : 'Gallery saved');
-  }, [galleries, setGalleries, editing, showToast]);
-
-  const deleteGallery = useCallback(() => {
-    if (!editing?.gallery) return;
-    const id = editing.gallery.id;
-    setGalleries(galleries.filter(g => g.id !== id));
-    if (activeGalleryId === id) goHome();
-    setEditing(null);
-    showToast('Gallery deleted');
-  }, [editing, galleries, setGalleries, activeGalleryId, goHome, showToast]);
+  if (loadError) {
+    return (
+      <div className="loading-screen">
+        <p style={{color:'var(--fg2)',maxWidth:400,textAlign:'center',lineHeight:1.7}}>{loadError}</p>
+      </div>
+    );
+  }
 
   return (
     <>
@@ -1314,10 +1506,8 @@ function App() {
           galleries={galleries}
           onSelectGallery={selectGallery}
           isAdmin={isAdmin}
-          onLoginClick={() => setShowLogin(true)}
-          onLogout={handleLogout}
-          onEditGallery={startEditGallery}
-          onNewGallery={startNewGallery}
+          onEditGallery={(g) => setEditingGallery(g)}
+          onNewGallery={() => setEditingGallery('new')}
         />
       )}
       {view === 'gallery' && activeGallery && (
@@ -1330,26 +1520,50 @@ function App() {
           heroHeight={tweaks.heroHeight}
           navStyle={tweaks.navStyle}
           isAdmin={isAdmin}
-          onLoginClick={() => setShowLogin(true)}
-          onLogout={handleLogout}
-          onEditGallery={startEditGallery}
+          adminToken={adminToken}
+          onRefresh={fetchGalleries}
         />
       )}
+
+      {/* Nav admin controls (only visible in gallery view, home view Nav handles its own) */}
+      {view === 'gallery' && (
+        <div style={{position:'fixed',top:0,right:isAdmin?170:120,zIndex:101,height:'var(--nav-h)',display:'flex',alignItems:'center',gap:12}}>
+          {isAdmin
+            ? <>
+                <span className="admin-badge">Admin</span>
+                <button className="nav-icon" title="Sign out" onClick={handleLogout} style={{color:'var(--fg)'}}>
+                  <span style={{width:18,height:18,display:'block'}}>{Icon.logout()}</span>
+                </button>
+              </>
+            : <button className="nav-icon" title="Admin login" onClick={() => setShowAdminLogin(true)} style={{color:'var(--fg)'}}>
+                <span style={{width:18,height:18,display:'block'}}>{Icon.key()}</span>
+              </button>
+          }
+        </div>
+      )}
+
       {toast && <Toast msg={toast} />}
 
-      {showLogin && (
-        <AdminLoginModal
-          onClose={() => setShowLogin(false)}
-          onSubmit={handleLogin}
+      {/* Admin modals */}
+      {showAdminLogin && (
+        <AdminLoginModal onLogin={handleLogin} onClose={() => setShowAdminLogin(false)} />
+      )}
+      {showAdminPanel && (
+        <AdminDrawer
+          galleries={galleries}
+          token={adminToken}
+          onRefresh={fetchGalleries}
+          onClose={() => setShowAdminPanel(false)}
+          showToast={showToast}
         />
       )}
-      {editing && (
-        <GalleryEditor
-          gallery={editing.gallery}
-          isNew={editing.isNew}
-          onClose={() => setEditing(null)}
-          onSave={saveGallery}
-          onDelete={editing.isNew ? null : deleteGallery}
+      {editingGallery && (
+        <GalleryEditorModal
+          gallery={editingGallery === 'new' ? null : editingGallery}
+          token={adminToken}
+          onSaved={handleAdminSaved}
+          onDeleted={handleAdminDeleted}
+          onClose={() => setEditingGallery(null)}
         />
       )}
 

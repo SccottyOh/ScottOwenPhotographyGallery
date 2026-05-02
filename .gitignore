@@ -1,0 +1,4 @@
+node_modules/
+gallery.db
+gallery.db-shm
+gallery.db-wal
